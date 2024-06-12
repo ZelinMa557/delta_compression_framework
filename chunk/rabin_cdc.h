@@ -1,0 +1,3 @@
+namespace delta {
+
+} // namespace delta
