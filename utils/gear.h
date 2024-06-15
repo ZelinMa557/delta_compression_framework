@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-static const uint64_t GEAR_TABLE = {
+static const uint64_t GEAR_TABLE[] = {
 	0xe80e8d55032474b3, 0x11b25b61f5924e15, 0x03aa5bd82a9eb669, 0xc45a153ef107a38c,
 	0xeac874b86f0f57b9, 0xa5ccedec95ec79c7, 0xe15a3320ad42ac0a, 0x5ed3583fa63cec15,
 	0xcd497bf624a4451d, 0xf9ade5b059683605, 0x773940c03fb11ca1, 0xa36b16e4a6ae15b2,
