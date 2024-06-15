@@ -1,1 +1,1 @@
-add_library(chunker STATIC rabin_cdc.cpp)
+add_library(chunker STATIC rabin_cdc.cpp fast_cdc.cpp)
