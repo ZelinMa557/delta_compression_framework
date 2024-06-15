@@ -8,17 +8,19 @@ namespace delta {
 class Chunk {
 public:
   Chunk() = delete;
-  Chunk(unsigned char *buf, bool needs_to_free, int length)
+  Chunk(uint8_t *buf, bool needs_to_free, int length)
       : buf_(buf), needs_to_free_(needs_to_free), length_(length){};
   ~Chunk() {
-    if (buf_ != nullptr && needs_to_free)
+    if (buf_ != nullptr && needs_to_free_)
       delete[] buf_;
   }
   static std::shared_ptr<Chunk> FromMemory(void *start, size_t size) {
-    auto buf = new unsigned char[size];
+    auto buf = new uint8_t[size];
     memcpy(buf, start, size);
-    return std::make_shared<Chunk>(buf, true);
+    return std::make_shared<Chunk>(buf, true, size);
   }
+  int len() const { return length_; }
+  uint8_t *buf() const { return buf_; }
   /*
    * look carefully to the life cycle of the buffer,
    * this function only record the address and length of the chunk content,
@@ -26,25 +28,25 @@ public:
    * use FromMemory instead.
    */
   static std::shared_ptr<Chunk> FromMemoryRef(void *start, size_t size) {
-    return std::make_shared<Chunk>(start, false, size);
+    return std::make_shared<Chunk>((uint8_t*)start, false, size);
   }
   // static std::shared_ptr<Chunk> FromFile(std::string file_name) {
   //     std::ifstream in(file_name, std::ios::binary);
-  //     auto buf = new unsigned char[in.size];
+  //     auto buf = new uint8_t[in.size];
   //     in.read(buf, in.size);
   //     return std::make_shared<Chunk>(buf);
   // }
   // static std::shared_ptr<Chunk> FromFile(std::string file_name, size_t
   // start_pos, size_t size) {
   //     std::ifstream in(file_name, std::ios::binary);
-  //     auto buf = new unsigned char[in.size];
+  //     auto buf = new uint8_t[in.size];
   //     in.seek(start_pos, std::ios::beg);
   //     in.read(buf, in.size);
   //     return std::make_shared<Chunk>(buf);
   // }
 
 private:
-  unsigned char *buf_ = nullptr;
+  uint8_t *buf_ = nullptr;
   bool needs_to_free_ = false;
   int length_;
 };

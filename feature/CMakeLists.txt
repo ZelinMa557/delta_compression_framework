@@ -1,0 +1,1 @@
+add_library(feature STATIC finesse_feature.cpp)
