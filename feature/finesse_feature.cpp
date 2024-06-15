@@ -24,9 +24,18 @@ std::vector<uint64_t> FinesseFeature(std::shared_ptr<Chunk> chunk,
   // group the sub features into super features.
   for (int i = 0; i < sub_features.size(); i += sf_subf) {
     std::sort(sub_features.begin() + i, sub_features.begin() + i + sf_subf);
-    for (int j = 0; j < sf_subf; i++) {
-      super_features[j] = std::max(super_features[j], sub_features[i + j]);
+  }
+  for (int i = 0; i < sf_cnt; i++) {
+    rabin_t rabin_ctx;
+    rabin_init(&rabin_ctx);
+    for (int j = 0; j < sf_subf; j++) {
+      auto sub_feature = sub_features[sf_subf * i + j];
+      auto data_ptr = (uint8_t*)&sub_feature;
+      for (int k = 0; k < 8; k++) {
+        rabin_append(&rabin_ctx, data_ptr[k]);
+      }
     }
+    super_features[i] = rabin_ctx.digest;
   }
   return super_features;
 }

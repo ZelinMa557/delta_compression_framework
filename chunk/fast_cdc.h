@@ -4,7 +4,7 @@
 namespace delta {
 class FastCDC : public Chunker {
 public:
-  RabinCDC();
+  FastCDC();
   bool ReinitWithFile(std::string file_name) override;
   std::shared_ptr<Chunk> GetNextChunk() override;
 

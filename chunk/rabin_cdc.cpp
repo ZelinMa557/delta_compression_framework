@@ -4,8 +4,8 @@
 #include "chunk/rabin_cdc.h"
 namespace delta {
 namespace {
-constexpr uint64_t min_chunk_size = 8192 - 2048;
-constexpr uint64_t max_chunk_size = 8192 + 2028;
+constexpr uint64_t min_chunk_size = 8192 - 4096;
+constexpr uint64_t max_chunk_size = 8192 + 4096;
 // the lower 13 bits are 1.
 // see https://pdos.csail.mit.edu/papers/lbfs:sosp01/lbfs.pdf
 constexpr uint64_t rabin_stop_mask = (1UL << 14) - 1;
