@@ -1,4 +1,4 @@
-// part of this file migrate from
+// part of this file are migrated from
 // https://github.com/dat-ecosystem-archive/rabin/
 #include "chunk/chunk.h"
 #include "chunk/rabin_cdc.h"
@@ -115,7 +115,7 @@ std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
     return nullptr;
   if (remaining_file_len <= min_chunk_size) {
     remaining_file_len = 0;
-    return Chunk::FromMemory(file_read_ptr, remaining_file_len);
+    return Chunk::FromMemoryRef(file_read_ptr, remaining_file_len);
   }
   uint8_t *read_start = file_read_ptr;
   for (uint64_t chunk_size = 1; chunk_size <= remaining_file_len;
@@ -127,7 +127,7 @@ std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
         chunk_size >= max_chunk_size) {
       rabin_reset();
       remaining_file_len -= chunk_size;
-      return Chunk::FromMemory(read_start, chunk_size);
+      return Chunk::FromMemoryRef(read_start, chunk_size);
     }
   }
   return nullptr;
