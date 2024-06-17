@@ -4,8 +4,8 @@
 #include <iostream>
 namespace Delta {
 Storage::Storage(std::string DataPath, std::string MetaPath,
-                 std::shared_ptr<Encoder> encoder, bool compress_mode) {
-  this->encoder_ = encoder;
+                 std::unique_ptr<Encoder> encoder, bool compress_mode) {
+  this->encoder_ = std::move(encoder);
   char fopen_flag[3] = {'r', '+', '\0'};
   if (compress_mode) {
     fopen_flag[0] = 'w';
