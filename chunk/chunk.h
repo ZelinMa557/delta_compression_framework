@@ -1,5 +1,6 @@
 #pragma once
 #include <cstring>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -18,6 +19,11 @@ public:
   static std::shared_ptr<Chunk> FromMemory(void *start, size_t size, uint32_t id) {
     auto buf = new uint8_t[size];
     memcpy(buf, start, size);
+    return std::make_shared<Chunk>(buf, true, size, id);
+  }
+  static std::shared_ptr<Chunk> FromFileStream(FILE *fp, size_t size, uint32_t id) {
+    auto buf = new uint8_t[size];
+    fread(buf, 1, size, fp);
     return std::make_shared<Chunk>(buf, true, size, id);
   }
   int len() const { return length_; }
