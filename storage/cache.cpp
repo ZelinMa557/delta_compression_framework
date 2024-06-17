@@ -1,3 +1,4 @@
+#include "chunk/chunk.h"
 #include "storage/cache.h"
 namespace Delta {
 std::shared_ptr<Chunk> ChunkCache::get(uint32_t chunk_id) {

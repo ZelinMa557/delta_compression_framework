@@ -22,7 +22,7 @@ public:
   ~Storage() {if(data_) fclose(data_); if (meta_) fclose(meta_);}
   void WriteBaseChunk(std::shared_ptr<Chunk> chunk);
   void WriteDeltaChunk(std::shared_ptr<Chunk> chunk, chunk_id base_chunk_id);
-  void std::shared_ptr<Chunk> GetChunkContent(chunk_id id);
+  std::shared_ptr<Chunk> GetChunkContent(chunk_id id);
 private:
   std::shared_ptr<Encoder> encoder_;
   ChunkCache cache_;

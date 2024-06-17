@@ -1,3 +1,4 @@
+#include "chunk/chunk.h"
 #include "index/super_feature_index.h"
 #include "feature/features.h"
 #include <assert.h>
@@ -20,9 +21,9 @@ SuperFeatureIndex::GetBaseChunkID(std::shared_ptr<Chunk> chunk,
   }
   if (add_new_base_chunk && !result.has_value()) {
     for (int i = 0; i < super_feature_count_; i++) {
-      index_[i][super_feature[i]] = chunk.id();
+      index_[i][super_feature[i]] = chunk->id();
     }
-    result = chunk.id();
+    result = chunk->id();
   }
   return result;
 }
@@ -68,12 +69,18 @@ bool SuperFeatureIndex::RecoverFromFile(const std::string &path) {
   auto read_uint64 = [&]() -> uint64_t {
     uint64_t result = 0;
     inFile.read(reinterpret_cast<char *>(&result), sizeof(uint64_t));
+    return result;
+  };
+  auto read_uint32 = [&]() -> uint32_t {
+    uint32_t result = 0;
+    inFile.read(reinterpret_cast<char *>(&result), sizeof(uint32_t));
+    return result;
   };
   for (int i = 0; i < super_feature_count_; i++) {
     uint64_t mapSize = read_uint64();
     for (int j = 0; j < mapSize; j++) {
       auto feature = read_uint64();
-      auto chunk_id = read_uint64();
+      auto chunk_id = read_uint32();
       index_[i][feature] = chunk_id;
     }
   }

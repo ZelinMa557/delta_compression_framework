@@ -27,10 +27,10 @@ public:
       index_.push_back({});
     }
     switch (feature_type_) {
-    case SuperFeature::Finesse:
+    case SuperFeatureType::Finesse:
       get_feature_ = getFinesseFeature;
       break;
-    case SuperFeature::Odess:
+    case SuperFeatureType::Odess:
       get_feature_ = getOdessFeature;
       break;
     }
@@ -44,7 +44,7 @@ private:
   std::vector<std::unordered_map<uint64_t, chunk_id>> index_;
   SuperFeatureType feature_type_;
   int super_feature_count_;
-  std::functional<std::vector<uint64_t>(std::shared_ptr<Chunk>, const int)>
+  std::function<std::vector<uint64_t>(std::shared_ptr<Chunk>, const int)>
       get_feature_;
 };
 } // namespace Delta

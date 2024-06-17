@@ -7,7 +7,7 @@ class Chunker {
 public:
     virtual bool ReinitWithFile(std::string file_name);
     virtual std::shared_ptr<Chunk> GetNextChunk();
-private:
+protected:
     uint32_t get_next_chunk_id() {
         return next_chunk_id_++;
     }

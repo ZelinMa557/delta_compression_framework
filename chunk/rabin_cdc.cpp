@@ -115,7 +115,7 @@ std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
     return nullptr;
   if (remaining_file_len <= min_chunk_size) {
     remaining_file_len = 0;
-    return Chunk::FromMemoryRef(file_read_ptr, remaining_file_len);
+    return Chunk::FromMemoryRef(file_read_ptr, remaining_file_len, get_next_chunk_id());
   }
   uint8_t *read_start = file_read_ptr;
   for (uint64_t chunk_size = 1; chunk_size <= remaining_file_len;

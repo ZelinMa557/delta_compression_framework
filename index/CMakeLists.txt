@@ -1,0 +1,1 @@
+add_library(index STATIC super_feature_index.cpp)

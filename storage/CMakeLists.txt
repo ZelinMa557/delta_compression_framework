@@ -1,0 +1,1 @@
+add_library(storage STATIC cache.cpp storage.cpp)

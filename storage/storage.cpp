@@ -1,3 +1,4 @@
+#include "chunk/chunk.h"
 #include "storage/storage.h"
 #include <cstdlib>
 #include <iostream>
@@ -22,30 +23,30 @@ Storage::Storage(std::string DataPath, std::string MetaPath,
 void Storage::WriteBaseChunk(std::shared_ptr<Chunk> chunk) {
   ChunkMeta meta;
   meta.offset = ftell(data_);
-  meta.base_chunk_id = chunk.id();
-  meta.size = chunk.len();
+  meta.base_chunk_id = chunk->id();
+  meta.size = chunk->len();
   meta.type = BaseChunk;
 
-  fwrite(data_, 1, chunk.len(), chunk.buf());
-  fwrite(meta_, sizeof(ChunkMeta), 1, &meta);
+  fwrite(chunk->buf(), 1, chunk->len(), data_);
+  fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
 }
 
 void Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
                               chunk_id base_chunk_id) {
-  auto base_chunk = cache_->get(base_chunk_id);
+  auto base_chunk = cache_.get(base_chunk_id);
   if (nullptr == base_chunk) {
     base_chunk = GetChunkContent(base_chunk_id);
-    cache_->add(base_chunk_id, base_chunk);
+    cache_.add(base_chunk_id, base_chunk);
   }
   auto delta_chunk = encoder_->encode(chunk, base_chunk);
   ChunkMeta meta;
   meta.offset = ftell(data_);
   meta.base_chunk_id = base_chunk_id;
-  meta.size = delta_chunk.len();
+  meta.size = delta_chunk->len();
   meta.type = DeltaChunk;
 
-  fwrite(data_, 1, delta_chunk.len(), delta_chunk.buf());
-  fwrite(meta_, sizeof(ChunkMeta), 1, &meta);
+  fwrite(delta_chunk->buf(), 1, delta_chunk->len(), data_);
+  fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
 }
 
 std::shared_ptr<Chunk> Storage::GetChunkContent(chunk_id id) {
@@ -55,7 +56,7 @@ std::shared_ptr<Chunk> Storage::GetChunkContent(chunk_id id) {
   ChunkMeta meta;
   fread(&meta, sizeof(ChunkMeta), 1, meta_);
   fseek(data_, meta.offset, SEEK_SET);
-  result = Chunk::FromFileStream(data_, meta.size, id);
+  auto result = Chunk::FromFileStream(data_, meta.size, id);
   fseek(meta_, 0, SEEK_END);
   fseek(data_, 0, SEEK_END);
   return result;
