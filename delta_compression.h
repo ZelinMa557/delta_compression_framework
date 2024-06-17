@@ -22,7 +22,7 @@ public:
   static std::unique_ptr<DeltaCompression> MakeOdess(std::string out_data_path,
                                                      std::string out_meta_path,
                                                      std::string index_path);
-  AddFile(const std::string &file_name);
+  void AddFile(const std::string &file_name);
 
 private:
   std::string out_data_path_;
