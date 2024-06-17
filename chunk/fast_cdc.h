@@ -1,7 +1,7 @@
 #pragma once
 #include "chunk/chunker.h"
 #include "utils/mapped_file.h"
-namespace delta {
+namespace Delta {
 class FastCDC : public Chunker {
 public:
   FastCDC();
@@ -20,4 +20,4 @@ private:
   uint8_t *file_read_ptr = nullptr;
   uint64_t remaining_file_len = 0;
 };
-} // namespace delta
+} // namespace Delta

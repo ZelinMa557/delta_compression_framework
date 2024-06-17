@@ -2,7 +2,7 @@
 #include "feature/features.h"
 #include "utils/rabin.cpp"
 #include <algorithm>
-namespace delta {
+namespace Delta {
 std::vector<uint64_t> FinesseFeature(std::shared_ptr<Chunk> chunk,
                                      const int sf_cnt, const int sf_subf) {
   int sub_chunk_length = chunk->len() / sf_subf;
@@ -39,4 +39,4 @@ std::vector<uint64_t> FinesseFeature(std::shared_ptr<Chunk> chunk,
   }
   return super_features;
 }
-} // namespace delta
+} // namespace Delta

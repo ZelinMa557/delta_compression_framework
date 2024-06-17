@@ -1,6 +1,6 @@
 #include <iostream>
 #include <memory>
-namespace delta {
+namespace Delta {
 class Chunk;
 class Encoder {
 public:
@@ -9,4 +9,4 @@ public:
   virtual std::shared_ptr<Chunk> decode(std::shared_ptr<Chunk> src,
                                         std::shared_ptr<Chunk> delta);
 };
-} // namespace delta
+} // namespace Delta

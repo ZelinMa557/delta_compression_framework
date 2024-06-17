@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
-namespace delta {
+namespace Delta {
 constexpr int default_finesse_sf_cnt = 3;
 // every super feature is grouped with 4 sub-features by default
 constexpr int default_finesse_sf_subf = 4;
@@ -32,4 +32,4 @@ std::vector<uint64_t> OdessFeature(std::shared_ptr<Chunk> chunk,
                                    const int sf_cnt = default_finesse_sf_cnt,
                                    const int sf_subf = default_finesse_sf_subf,
                                    uint64_t mask = default_odess_mask);
-} // namespace delta
+} // namespace Delta

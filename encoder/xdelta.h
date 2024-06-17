@@ -1,5 +1,5 @@
 #include "encoder/encoder.h"
-namespace delta {
+namespace Delta {
 class XDelta : public Encoder {
 public:
   std::shared_ptr<Chunk> encode(std::shared_ptr<Chunk> src,
@@ -7,4 +7,4 @@ public:
   std::shared_ptr<Chunk> decode(std::shared_ptr<Chunk> src,
                                 std::shared_ptr<Chunk> delta) override;
 };
-} // namespace delta
+} // namespace Delta

@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
-namespace delta {
+namespace Delta {
 class Recover {
 
 };
-} // namespace delta
+} // namespace Delta

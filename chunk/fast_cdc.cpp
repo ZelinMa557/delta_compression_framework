@@ -2,7 +2,7 @@
 #include "chunk/fast_cdc.h"
 #include "chunk/chunk.h"
 #include "utils/gear.h"
-namespace delta {
+namespace Delta {
 FastCDC::FastCDC() {}
 
 bool FastCDC::ReinitWithFile(std::string file_name) {
@@ -20,7 +20,7 @@ std::shared_ptr<Chunk> FastCDC::GetNextChunk() {
     return nullptr;
   if (remaining_file_len <= min_chunk_size) {
     remaining_file_len = 0;
-    return Chunk::FromMemoryRef(file_read_ptr, remaining_file_len);
+    return Chunk::FromMemoryRef(file_read_ptr, remaining_file_len, get_next_chunk_id());
   }
   uint64_t finger_print = 0;
   int chunk_size = 1;
@@ -36,7 +36,7 @@ std::shared_ptr<Chunk> FastCDC::GetNextChunk() {
     finger_print = (finger_print << 1) + GEAR_TABLE[byte];
     if (finger_print & mask_s == 0) {
       remaining_file_len -= chunk_size;
-      return Chunk::FromMemoryRef(read_start, chunk_size);
+      return Chunk::FromMemoryRef(read_start, chunk_size, get_next_chunk_id());
     }
   }
   for (; chunk_size <=
@@ -46,10 +46,10 @@ std::shared_ptr<Chunk> FastCDC::GetNextChunk() {
     finger_print = (finger_print << 1) + GEAR_TABLE[byte];
     if (finger_print & mask_l == 0) {
       remaining_file_len -= chunk_size;
-      return Chunk::FromMemoryRef(read_start, chunk_size);
+      return Chunk::FromMemoryRef(read_start, chunk_size, get_next_chunk_id());
     }
   }
   return nullptr;
 }
 
-} // namespace delta
+} // namespace Delta

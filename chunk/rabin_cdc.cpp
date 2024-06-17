@@ -2,7 +2,7 @@
 // https://github.com/dat-ecosystem-archive/rabin/
 #include "chunk/chunk.h"
 #include "chunk/rabin_cdc.h"
-namespace delta {
+namespace Delta {
 namespace {
 constexpr uint64_t min_chunk_size = 8192 - 4096;
 constexpr uint64_t max_chunk_size = 8192 + 4096;
@@ -127,9 +127,9 @@ std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
         chunk_size >= max_chunk_size) {
       rabin_reset();
       remaining_file_len -= chunk_size;
-      return Chunk::FromMemoryRef(read_start, chunk_size);
+      return Chunk::FromMemoryRef(read_start, chunk_size, get_next_chunk_id());
     }
   }
   return nullptr;
 }
-} // namespace delta
+} // namespace Delta
