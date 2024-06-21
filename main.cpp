@@ -19,13 +19,13 @@ int main(int argc, char *argv[]) {
   auto task = config->get_as<std::string>("task");
   auto algorithm = config->get_as<std::string>("algorithm");
   if (*task == "compression") {
-    std::unique_ptr<Delta::DeltaCompression> compression = nullptr;
+    std::unique_ptr<Delta::DeltaCompression> compression;
     if (*algorithm == "finesse") {
-      compression.reset(std::move(Delta::DeltaCompression::MakeFinesse(
-          *data_path, *meta_path, *index_path)));
-    } else if (algorithm == "odess") {
-      compression.reset(std::move(Delta::DeltaCompression::MakeOdess(
-          *data_path, *meta_path, *index_path)));
+      compression = Delta::DeltaCompression::MakeFinesse(
+          *data_path, *meta_path, *index_path);
+    } else if (*algorithm == "odess") {
+      compression = Delta::DeltaCompression::MakeOdess(
+          *data_path, *meta_path, *index_path);
     }
     auto task_data_dir = config->get_as<std::string>("task_data_dir");
     for (const auto &entry :
