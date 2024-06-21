@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(delta_compression_framework)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 99)
 
 
 include_directories(${CMAKE_SOURCE_DIR})

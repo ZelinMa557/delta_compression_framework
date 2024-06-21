@@ -8,7 +8,7 @@ class XDelta : public Encoder {
 public:
   std::shared_ptr<Chunk> encode(std::shared_ptr<Chunk> base_chunk,
                                 std::shared_ptr<Chunk> new_chunk) override {
-    int delta_chunk_size = 0;
+    long unsigned int delta_chunk_size = 0;
     if (0 != xd3_encode_memory(new_chunk->buf(), new_chunk->len(),
                                base_chunk->buf(), base_chunk->len(),
                                chunk_buffer_, &delta_chunk_size, 10000, 0)) {
@@ -20,7 +20,7 @@ public:
   }
   std::shared_ptr<Chunk> decode(std::shared_ptr<Chunk> base,
                                 std::shared_ptr<Chunk> delta) override {
-    int decode_chunk_size = 0;
+    long unsigned int decode_chunk_size = 0;
     if (0 != xd3_decode_memory(delta->buf(), delta->len(), base->buf(), base->len(),
                                chunk_buffer_, &decode_chunk_size, 10000, 0)) {
       std::cerr << "some wrong happens in XDelta decode" << std::endl;

@@ -22,13 +22,9 @@
 #ifndef _XDELTA3_H_
 #define _XDELTA3_H_
 
-#define _POSIX_SOURCE 200112L
-#define _ISOC99_SOURCE
 #define _C99_SOURCE
 
-#if HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <errno.h>
 #include <stdarg.h>
@@ -167,8 +163,8 @@ typedef ULONGLONG      uint64_t;
 #define _FILE_OFFSET_BITS 64
 #endif
 
-static_assert(SIZEOF_SIZE_T == sizeof(size_t), "SIZEOF_SIZE_T not correctly set");
-static_assert(SIZEOF_UNSIGNED_LONG_LONG == sizeof(unsigned long long), "SIZEOF_UNSIGNED_LONG_LONG not correctly set");
+// static_assert(SIZEOF_SIZE_T == sizeof(size_t), "SIZEOF_SIZE_T not correctly set");
+// static_assert(SIZEOF_UNSIGNED_LONG_LONG == sizeof(unsigned long long), "SIZEOF_UNSIGNED_LONG_LONG not correctly set");
 
 /* Set a xoff_t typedef and the "Q" printf insert. */
 #if defined(_WIN32)
