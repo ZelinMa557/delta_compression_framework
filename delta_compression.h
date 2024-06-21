@@ -1,5 +1,5 @@
 #include "chunk/chunker.h"
-#include "chunk/encoder.h"
+#include "encoder/encoder.h"
 #include "index/index.h"
 #include "storage/storage.h"
 #include <memory>

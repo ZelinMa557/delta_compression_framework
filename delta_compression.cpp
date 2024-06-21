@@ -4,6 +4,7 @@
 #include "encoder/xdelta.h"
 #include "index/super_feature_index.h"
 #include "storage/storage.h"
+#include "delta_compression.h"
 #include <string>
 #include <vector>
 namespace Delta {
@@ -13,11 +14,11 @@ void DeltaCompression::AddFile(const std::string &file_name) {
     auto chunk = chunker_->GetNextChunk();
     if (!chunk)
       break;
-    auto base_chunk_id = GetBaseChunkID(chunk, ture);
-    if (base_chunk_id == chunk->id()) {
-      storage_->WriteBaseChunk(chunk);
+    auto base_chunk_id = index_->GetBaseChunkID(chunk, true);
+    if (base_chunk_id.value() == chunk->id()) {
+      storage_.WriteBaseChunk(chunk);
     } else {
-      storage_->WriteDeltaChunk(chunk, base_chunk_id);
+      storage_.WriteDeltaChunk(chunk, base_chunk_id.value());
     }
   }
 }

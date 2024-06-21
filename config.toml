@@ -1,0 +1,7 @@
+task = "compression" # "compression" or "recover"
+algorithm = "finesse" # "finesse", "odess"
+
+task_data_dir = "./test_data/linux"
+index_path = "./test_data/default.index"
+data_path = "./test_data/default.data"
+meta_path = "./test_data/default.meta"
