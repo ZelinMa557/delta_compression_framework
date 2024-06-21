@@ -11,5 +11,6 @@ add_subdirectory(index)
 add_subdirectory(storage)
 add_subdirectory(3party/xdelta3)
 add_library(delta_compression STATIC delta_compression.cpp)
-# add_executable(delta main.cpp)
+add_executable(delta main.cpp)
+target_link_libraries(delta chunker feature index storage utils delta_compression xdelta3)
 
