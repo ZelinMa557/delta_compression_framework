@@ -1,6 +1,7 @@
 #pragma once
 #include "chunk/chunker.h"
 #include "utils/mapped_file.h"
+#include <cstdint>
 namespace Delta {
 class FastCDC : public Chunker {
 public:
@@ -9,11 +10,9 @@ public:
   std::shared_ptr<Chunk> GetNextChunk() override;
 
 private:
-  int min_chunk_size = 4096;
-  int max_chunk_size = 8192 + 4096;
-  int avg_chunk_size = 8192;
-  uint64_t mask_s = (1LL << 12) - 1;
-  uint64_t mask_l = (1LL << 14) - 1;
+  int min_chunk_size = 4096 + 2048;
+  int max_chunk_size = 8192 + 1048;
+  const uint64_t mask = (1LL << 13) - 1;
   
 
   mapped_file file;

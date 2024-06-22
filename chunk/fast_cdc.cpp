@@ -39,25 +39,11 @@ std::shared_ptr<Chunk> FastCDC::GetNextChunk() {
     finger_print = (finger_print << 1) + GEAR_TABLE[byte];
   }
   for (; chunk_size <=
-         std::min((uint64_t)remaining_file_len, (uint64_t)avg_chunk_size);
-       chunk_size++) {
-    uint8_t byte = *file_read_ptr++;
-    finger_print = (finger_print << 1) + GEAR_TABLE[byte];
-    if (finger_print & mask_s == 0) {
-      remaining_file_len -= chunk_size;
-      LOG(INFO) << "FastCDC split file " << this->file.get_file_name()
-               << " chunk offset: "
-               << (uint64_t)(read_start - file.get_mapped_addr())
-               << " length: " << chunk_size;
-      return Chunk::FromMemoryRef(read_start, chunk_size, get_next_chunk_id());
-    }
-  }
-  for (; chunk_size <=
          std::min((uint64_t)remaining_file_len, (uint64_t)max_chunk_size);
        chunk_size++) {
     uint8_t byte = *file_read_ptr++;
     finger_print = (finger_print << 1) + GEAR_TABLE[byte];
-    if (finger_print & mask_l == 0) {
+    if ((finger_print & mask) == 0) {
       remaining_file_len -= chunk_size;
       LOG(INFO) << "FastCDC split file " << this->file.get_file_name()
                << " chunk offset: "
