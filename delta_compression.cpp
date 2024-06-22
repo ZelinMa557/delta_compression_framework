@@ -1,10 +1,11 @@
+#include "delta_compression.h"
 #include "chunk/chunk.h"
 #include "chunk/fast_cdc.h"
 #include "chunk/rabin_cdc.h"
 #include "encoder/xdelta.h"
 #include "index/super_feature_index.h"
 #include "storage/storage.h"
-#include "delta_compression.h"
+#include <glog/logging.h>
 #include <string>
 #include <vector>
 namespace Delta {
@@ -12,12 +13,16 @@ void DeltaCompression::AddFile(const std::string &file_name) {
   this->chunker_->ReinitWithFile(file_name);
   while (true) {
     auto chunk = chunker_->GetNextChunk();
-    if (!chunk)
+    if (nullptr == chunk)
       break;
     auto base_chunk_id = index_->GetBaseChunkID(chunk, true);
     if (base_chunk_id.value() == chunk->id()) {
+      LOG(INFO) << "chunk " << chunk->id() << " is a base chunk";
       storage_.WriteBaseChunk(chunk);
     } else {
+      LOG(INFO) << "chunk " << chunk->id()
+                << " is a delta chunk, base chunk id is "
+                << base_chunk_id.value();
       storage_.WriteDeltaChunk(chunk, base_chunk_id.value());
     }
   }

@@ -3,7 +3,7 @@
 #include "feature/features.h"
 #include <assert.h>
 #include <fstream>
-#include <iostream>
+#include <glog/logging.h>
 namespace Delta {
 using chunk_id = uint32_t;
 std::optional<chunk_id>
@@ -21,7 +21,8 @@ SuperFeatureIndex::GetBaseChunkID(std::shared_ptr<Chunk> chunk,
   }
   if (add_new_base_chunk && !result.has_value()) {
     for (int i = 0; i < super_feature_count_; i++) {
-      index_[i][super_feature[i]] = chunk->id();
+      if (super_feature[i] != 0)
+        index_[i][super_feature[i]] = chunk->id();
     }
     result = chunk->id();
   }
@@ -31,8 +32,8 @@ SuperFeatureIndex::GetBaseChunkID(std::shared_ptr<Chunk> chunk,
 bool SuperFeatureIndex::DumpToFile(const std::string &path) {
   std::ofstream outFile(path, std::ios::binary);
   if (!outFile) {
-    std::cerr << "SuperFeatureIndex::DumpToFile: cannot open output file "
-              << path << std::endl;
+    LOG(FATAL) << "SuperFeatureIndex::DumpToFile: cannot open output file "
+              << path;
     return false;
   }
   auto write_uint64 = [&](uint64_t data) {
@@ -55,15 +56,14 @@ bool SuperFeatureIndex::DumpToFile(const std::string &path) {
 bool SuperFeatureIndex::RecoverFromFile(const std::string &path) {
   std::ifstream inFile(path, std::ios::binary);
   if (!inFile) {
-    std::cerr << "SuperFeatureIndex::RecoverFromFile: cannot open output file "
-              << path << std::endl;
+    LOG(FATAL) << "SuperFeatureIndex::RecoverFromFile: cannot open output file "
+              << path;
     return false;
   }
   int super_feature_count = 0;
   inFile.read(reinterpret_cast<char *>(&super_feature_count), sizeof(int));
   if (super_feature_count_ != super_feature_count) {
-    std::cerr << "super feature count changed after recover, abort"
-              << std::endl;
+    LOG(FATAL) << "super feature count changed after recover, abort";
     return false;
   }
   auto read_uint64 = [&]() -> uint64_t {

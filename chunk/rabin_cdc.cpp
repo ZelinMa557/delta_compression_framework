@@ -1,7 +1,10 @@
 // part of this file are migrated from
 // https://github.com/dat-ecosystem-archive/rabin/
-#include "chunk/chunk.h"
 #include "chunk/rabin_cdc.h"
+#include "chunk/chunk.h"
+
+#include <cstdint>
+#include <glog/logging.h>
 namespace Delta {
 namespace {
 constexpr uint64_t min_chunk_size = 8192 - 4096;
@@ -70,8 +73,7 @@ RabinCDC::RabinCDC() {
     // two parts: Part A contains the result of the modulus operation, part
     // B is used to cancel out the 8 top bits so that one XOR operation is
     // enough to reduce modulo Polynomial
-    mod_table[b] = mod(((uint64_t)b) << k, polynomial) | ((uint64_t)b)
-                                                                   << k;
+    mod_table[b] = mod(((uint64_t)b) << k, polynomial) | ((uint64_t)b) << k;
   }
 }
 
@@ -107,6 +109,7 @@ bool RabinCDC::ReinitWithFile(std::string file_name) {
   }
   this->file_read_ptr = this->file.get_mapped_addr();
   this->remaining_file_len = this->file.get_maped_len();
+  LOG(INFO) << "RabinCDC inited with file: " << file_name << " length: " << remaining_file_len;
   return true;
 }
 
@@ -114,8 +117,14 @@ std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
   if (remaining_file_len == 0)
     return nullptr;
   if (remaining_file_len <= min_chunk_size) {
+    auto chunk_size = remaining_file_len;
     remaining_file_len = 0;
-    return Chunk::FromMemoryRef(file_read_ptr, remaining_file_len, get_next_chunk_id());
+    LOG(INFO) << "RabinCDC split file " << this->file.get_file_name()
+               << "chunk offset: "
+               << (uint64_t)(file_read_ptr - file.get_mapped_addr())
+               << " length: " << remaining_file_len;
+    return Chunk::FromMemoryRef(file_read_ptr, chunk_size,
+                                get_next_chunk_id());
   }
   uint8_t *read_start = file_read_ptr;
   for (uint64_t chunk_size = 1; chunk_size <= remaining_file_len;
@@ -127,6 +136,10 @@ std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
         chunk_size >= max_chunk_size) {
       rabin_reset();
       remaining_file_len -= chunk_size;
+      LOG(INFO) << "RabinCDC split file " << this->file.get_file_name()
+                 << "chunk offset: "
+                 << (uint64_t)(read_start - file.get_mapped_addr())
+                 << " length: " << chunk_size;
       return Chunk::FromMemoryRef(read_start, chunk_size, get_next_chunk_id());
     }
   }

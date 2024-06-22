@@ -1,7 +1,7 @@
 #include "chunk/chunk.h"
 #include "storage/storage.h"
 #include <cstdlib>
-#include <iostream>
+#include <glog/logging.h>
 namespace Delta {
 Storage::Storage(std::string DataPath, std::string MetaPath,
                  std::unique_ptr<Encoder> encoder, bool compress_mode) {
@@ -13,8 +13,7 @@ Storage::Storage(std::string DataPath, std::string MetaPath,
   data_ = fopen(DataPath.c_str(), fopen_flag);
   meta_ = fopen(MetaPath.c_str(), fopen_flag);
   if (!data_ || !meta_) {
-    std::cerr << "Fail to open " << DataPath << " or " << MetaPath << std::endl;
-    std::abort();
+    LOG(FATAL) << "Fail to open " << DataPath << " or " << MetaPath;
   }
   fseek(data_, 0, SEEK_END);
   fseek(meta_, 0, SEEK_END);
@@ -29,6 +28,7 @@ void Storage::WriteBaseChunk(std::shared_ptr<Chunk> chunk) {
 
   fwrite(chunk->buf(), 1, chunk->len(), data_);
   fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
+  LOG(INFO) << "write base chunk " << chunk->id() << ", len " << chunk->len();
 }
 
 void Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
@@ -47,6 +47,7 @@ void Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
 
   fwrite(delta_chunk->buf(), 1, delta_chunk->len(), data_);
   fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
+  LOG(INFO) << "write delta chunk " << chunk->id() << ", len " << chunk->len();
 }
 
 std::shared_ptr<Chunk> Storage::GetChunkContent(chunk_id id) {

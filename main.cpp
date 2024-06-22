@@ -4,7 +4,10 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <glog/logging.h>
 int main(int argc, char *argv[]) {
+  google::InitGoogleLogging(argv[0]);
+  FLAGS_stderrthreshold = google::INFO;
   std::string config_file;
   if (argc == 2) {
     config_file = std::string(argv[1]);
@@ -21,9 +24,11 @@ int main(int argc, char *argv[]) {
   if (*task == "compression") {
     std::unique_ptr<Delta::DeltaCompression> compression;
     if (*algorithm == "finesse") {
+      LOG(INFO) << "start finesse compression task...";
       compression = Delta::DeltaCompression::MakeFinesse(
           *data_path, *meta_path, *index_path);
     } else if (*algorithm == "odess") {
+      LOG(INFO) << "start odess compression task...";
       compression = Delta::DeltaCompression::MakeOdess(
           *data_path, *meta_path, *index_path);
     }
@@ -31,6 +36,7 @@ int main(int argc, char *argv[]) {
     for (const auto &entry :
          std::filesystem::recursive_directory_iterator(*task_data_dir)) {
       if (entry.is_regular_file()) {
+        LOG(INFO) << "start processing file " << entry.path().relative_path().string();
         compression->AddFile(entry.path().relative_path().string());
       }
     }

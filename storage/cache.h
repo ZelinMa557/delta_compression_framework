@@ -23,7 +23,7 @@ public:
 
 private:
   void insertToHead(Node *node);
-  const size_t max_memory_usage = 400 * 1024 * 1024;
+  const size_t max_memory_usage = 100 * 1024 * 1024;
   size_t current_memory = 0;
   std::unordered_map<uint32_t, Node *> map_;
   Node *dummy_head;

@@ -24,6 +24,7 @@ public:
     }
     uint8_t *get_mapped_addr() const { return mapped_addr; }
     uint64_t get_maped_len() const { return mapped_len; }
+    const std::string &get_file_name() const { return file_name; }
     bool map_success() const { return mapped_len != 0; }
     mapped_file(const mapped_file&) = delete;
     mapped_file& operator=(const mapped_file&) = delete;

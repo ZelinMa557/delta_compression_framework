@@ -1,6 +1,7 @@
 #include "chunk/chunk.h"
 #include "feature/features.h"
 #include "utils/gear.h"
+#include <glog/logging.h>
 namespace Delta {
 static uint64_t M[] = {
     1, 4, 9, 23, 37, 45, 179, 286, 437, 920, 1014, 2987,
@@ -28,8 +29,8 @@ std::vector<uint64_t> OdessFeature(std::shared_ptr<Chunk> chunk,
         uint64_t transform = (M[j] * finger_print + A[j]) % (1LL << 32);
         // we need to guarantee that when sub_features[i] is not inited,
         // always set its value
-        if (sub_features[i] >= transform || 0 == sub_features[i])
-          sub_features[i] = transform;
+        if (sub_features[j] >= transform || 0 == sub_features[j])
+          sub_features[j] = transform;
       }
     }
   }
@@ -43,6 +44,7 @@ std::vector<uint64_t> OdessFeature(std::shared_ptr<Chunk> chunk,
       hash_value = (hash_value << 1) + GEAR_TABLE[this_hash_buf[j]];
     }
     super_features[i] = hash_value;
+    LOG(INFO) << "chunk " << chunk->id() << " odess sf_" << i << " = " << super_features[i];
   }
   return super_features;
 }
