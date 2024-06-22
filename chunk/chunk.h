@@ -26,6 +26,9 @@ public:
     fread(buf, 1, size, fp);
     return std::make_shared<Chunk>(buf, true, size, id);
   }
+  std::shared_ptr<Chunk> DeepCopy() {
+    return FromMemory(buf_, length_, id_);
+  }
   int len() const { return length_; }
   uint8_t *buf() const { return buf_; }
   chunk_id id() const { return id_; }
