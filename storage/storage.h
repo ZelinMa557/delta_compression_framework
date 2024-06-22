@@ -14,7 +14,7 @@ struct ChunkMeta {
   chunk_id base_chunk_id;
   uint16_t size;
   uint8_t type;
-} __attribute__((aligned(128)));
+} __attribute__((aligned(16)));
 
 class Storage {
 public:
