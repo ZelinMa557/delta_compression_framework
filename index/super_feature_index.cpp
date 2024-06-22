@@ -21,8 +21,7 @@ SuperFeatureIndex::GetBaseChunkID(std::shared_ptr<Chunk> chunk,
   }
   if (add_new_base_chunk && !result.has_value()) {
     for (int i = 0; i < super_feature_count_; i++) {
-      if (super_feature[i] != 0)
-        index_[i][super_feature[i]] = chunk->id();
+      index_[i][super_feature[i]] = chunk->id();
     }
     result = chunk->id();
   }
