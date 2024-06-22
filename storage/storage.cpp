@@ -38,7 +38,7 @@ void Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
     base_chunk = GetChunkContent(base_chunk_id);
     cache_.add(base_chunk_id, base_chunk);
   }
-  auto delta_chunk = encoder_->encode(chunk, base_chunk);
+  auto delta_chunk = encoder_->encode(base_chunk, chunk);
   ChunkMeta meta;
   meta.offset = ftell(data_);
   meta.base_chunk_id = base_chunk_id;
@@ -58,6 +58,7 @@ std::shared_ptr<Chunk> Storage::GetChunkContent(chunk_id id) {
   fread(&meta, sizeof(ChunkMeta), 1, meta_);
   fseek(data_, meta.offset, SEEK_SET);
   auto result = Chunk::FromFileStream(data_, meta.size, id);
+  LOG(INFO) << "get base chunk " << result->id() << " size " << result->len();
   fseek(meta_, 0, SEEK_END);
   fseek(data_, 0, SEEK_END);
   return result;

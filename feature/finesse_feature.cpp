@@ -5,7 +5,7 @@
 namespace Delta {
 std::vector<uint64_t> FinesseFeature(std::shared_ptr<Chunk> chunk,
                                      const int sf_cnt, const int sf_subf) {
-  int sub_chunk_length = chunk->len() / sf_subf;
+  int sub_chunk_length = chunk->len() / (sf_subf * sf_cnt);
   uint8_t *content = chunk->buf();
   std::vector<uint64_t> sub_features(sf_cnt * sf_subf, 0);
   std::vector<uint64_t> super_features(sf_cnt, 0);
