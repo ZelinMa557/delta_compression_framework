@@ -72,16 +72,22 @@ DeltaCompression::DeltaCompression() {
     if (chunker_type == "rabin-cdc") {
       this->chunker_ =
           std::make_unique<RabinCDC>(min_chunk_size, max_chunk_size, stop_mask);
+      LOG(INFO) << "Add RabinCDC chunker, min_chunk_size=" << min_chunk_size
+                << " max_chunk_size=" << max_chunk_size
+                << " stop_mask=" << stop_mask;
     } else {
       this->chunker_ =
           std::make_unique<FastCDC>(min_chunk_size, max_chunk_size, stop_mask);
+      LOG(INFO) << "Add FastCDC chunker, min_chunk_size=" << min_chunk_size
+                << " max_chunk_size=" << max_chunk_size
+                << " stop_mask=" << stop_mask;
     }
   } else {
     LOG(FATAL) << "Unknown chunker type " << chunker_type;
   }
 
   auto feature = config->get_table("feature");
-  auto feature_type = *chunker->get_as<std::string>("type");
+  auto feature_type = *feature->get_as<std::string>("type");
   if (feature_type == "finesse") {
     this->index_ = std::make_unique<SuperFeatureIndex>(
         SuperFeatureIndex::SuperFeatureType::Finesse);
