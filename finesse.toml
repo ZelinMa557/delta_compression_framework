@@ -1,0 +1,21 @@
+task = "compression"
+task_data_dir = "./test_data/linux"
+
+feature_index_path = "./test_data/default.index"
+dedup_index_path = "./test_data/default.dedup"
+chunk_data_path = "./test_data/default.data"
+chunk_meta_path = "./test_data/default.meta"
+file_meta_path = "./test_data/default.file"
+
+[feature]
+type = "finesse"
+
+[chunker]
+type = "rabin-cdc"
+min_chunk_size = 4096
+max_chunk_size = 12288
+stop_mask = 8191 # 1 << 13 - 1
+
+[storage]
+encoder = "xdelta"
+cache_size = 200 #mb

@@ -7,11 +7,6 @@
 #include <glog/logging.h>
 namespace Delta {
 namespace {
-constexpr uint64_t min_chunk_size = 8192 - 2048;
-constexpr uint64_t max_chunk_size = 8192 + 2048;
-// the lower 13 bits are 1.
-// see https://pdos.csail.mit.edu/papers/lbfs:sosp01/lbfs.pdf
-constexpr uint64_t rabin_stop_mask = (1UL << 14) - 1;
 
 constexpr uint64_t polynomial = 0x3DA3358B4DC173LL;
 constexpr uint64_t polynomial_degree = 53;
@@ -44,7 +39,9 @@ uint64_t append_byte(uint64_t hash, uint8_t b, uint64_t pol) {
 
 } // namespace
 
-RabinCDC::RabinCDC() {
+RabinCDC::RabinCDC(uint64_t min_ck_sz, uint64_t max_ck_sz, uint64_t mask)
+    : min_chunk_size_(min_ck_sz), max_chunk_size_(max_ck_sz),
+      rabin_stop_mask_(mask) {
   // calculate table for sliding out bytes. The byte to slide out is used as
   // the index for the table, the value contains the following:
   // out_table[b] = Hash(b || 0 ||        ...        || 0)
@@ -56,7 +53,6 @@ RabinCDC::RabinCDC() {
   //  = H(    0     || b_1 || ...     || b_w)
   //
   // Afterwards a new byte can be shifted in.
-  LOG(INFO) << "start calc rabin table...";
   for (int b = 0; b < 256; b++) {
     uint64_t hash = 0;
     hash = append_byte(hash, (uint8_t)b, polynomial);
@@ -120,7 +116,7 @@ bool RabinCDC::ReinitWithFile(std::string file_name) {
 std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
   if (remaining_file_len == 0)
     return nullptr;
-  if (remaining_file_len <= min_chunk_size) {
+  if (remaining_file_len <= min_chunk_size_) {
     auto chunk_size = remaining_file_len;
     remaining_file_len = 0;
     LOG(INFO) << "RabinCDC split file " << this->file.get_file_name()
@@ -134,9 +130,9 @@ std::shared_ptr<Chunk> RabinCDC::GetNextChunk() {
        chunk_size++) {
     uint8_t b = *file_read_ptr++;
     rabin_slide(b);
-    if ((chunk_size >= min_chunk_size &&
-         ((this->digest & rabin_stop_mask) == 0)) ||
-        chunk_size >= max_chunk_size) {
+    if ((chunk_size >= min_chunk_size_ &&
+         ((this->digest & rabin_stop_mask_) == 0)) ||
+        chunk_size >= max_chunk_size_) {
       rabin_reset();
       remaining_file_len -= chunk_size;
       LOG(INFO) << "RabinCDC split file " << this->file.get_file_name()

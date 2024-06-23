@@ -1,1 +1,1 @@
-add_library(utils STATIC rabin.cpp)
+add_library(utils STATIC rabin.cpp sha1.cpp)

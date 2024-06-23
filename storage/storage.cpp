@@ -1,10 +1,12 @@
-#include "chunk/chunk.h"
 #include "storage/storage.h"
+#include "chunk/chunk.h"
 #include <cstdlib>
 #include <glog/logging.h>
 namespace Delta {
 Storage::Storage(std::string DataPath, std::string MetaPath,
-                 std::unique_ptr<Encoder> encoder, bool compress_mode) {
+                 std::unique_ptr<Encoder> encoder, bool compress_mode,
+                 size_t cache_size)
+    : cache_(cache_size) {
   this->encoder_ = std::move(encoder);
   char fopen_flag[3] = {'r', '+', '\0'};
   if (compress_mode) {
@@ -62,5 +64,21 @@ std::shared_ptr<Chunk> Storage::GetChunkContent(chunk_id id) {
   fseek(meta_, 0, SEEK_END);
   fseek(data_, 0, SEEK_END);
   return result;
+}
+
+void Storage::WriteDuplicateChunk(std::shared_ptr<Chunk> chunk,
+                                  chunk_id base_chunk_id) {
+  ChunkMeta meta;
+  meta.base_chunk_id = base_chunk_id;
+  meta.size = chunk->len();
+  meta.type = DuplicateChunk;
+  fseek(meta_, base_chunk_id & sizeof(ChunkMeta), SEEK_SET);
+  ChunkMeta base_meta;
+  fread(&base_meta, sizeof(ChunkMeta), 1, meta_);
+  meta.offset = base_meta.offset;
+  fseek(meta_, 0, SEEK_END);
+  fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
+  LOG(INFO) << "write duplicate chunk " << chunk->id() << ", base id "
+            << base_chunk_id;
 }
 } // namespace Delta

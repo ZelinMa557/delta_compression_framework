@@ -1,42 +1,29 @@
 #include "3party/cpptoml.h"
+#include "config.h"
 #include "delta_compression.h"
 #include <filesystem>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <glog/logging.h>
+DEFINE_string(config, "finesse.toml", "path to config file");
+using namespace Delta;
 int main(int argc, char *argv[]) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_stderrthreshold = google::INFO;
+  Config::Instance().Init(FLAGS_config);
   std::string config_file;
-  if (argc == 2) {
-    config_file = std::string(argv[1]);
-  } else {
-    config_file = "config.toml";
-  }
-  auto config = cpptoml::parse_file("config.toml");
-  auto index_path = config->get_as<std::string>("index_path");
-  auto data_path = config->get_as<std::string>("data_path");
-  auto meta_path = config->get_as<std::string>("meta_path");
-
-  auto task = config->get_as<std::string>("task");
-  auto algorithm = config->get_as<std::string>("algorithm");
+  auto task = Config::Instance().get()->get_as<std::string>("task");
   if (*task == "compression") {
     std::unique_ptr<Delta::DeltaCompression> compression;
-    if (*algorithm == "finesse") {
-      LOG(INFO) << "start finesse compression task...";
-      compression = Delta::DeltaCompression::MakeFinesse(
-          *data_path, *meta_path, *index_path);
-    } else if (*algorithm == "odess") {
-      LOG(INFO) << "start odess compression task...";
-      compression = Delta::DeltaCompression::MakeOdess(
-          *data_path, *meta_path, *index_path);
-    }
-    auto task_data_dir = config->get_as<std::string>("task_data_dir");
+    auto task_data_dir =
+        Config::Instance().get()->get_as<std::string>("task_data_dir");
     for (const auto &entry :
          std::filesystem::recursive_directory_iterator(*task_data_dir)) {
       if (entry.is_regular_file()) {
-        LOG(INFO) << "start processing file " << entry.path().relative_path().string();
+        LOG(INFO) << "start processing file "
+                  << entry.path().relative_path().string();
         compression->AddFile(entry.path().relative_path().string());
       }
     }

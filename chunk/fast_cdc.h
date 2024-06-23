@@ -5,15 +5,15 @@
 namespace Delta {
 class FastCDC : public Chunker {
 public:
-  FastCDC();
+  FastCDC(int min_ck_sz, int max_ck_sz, uint64_t stop_mask)
+      : min_chunk_size(min_ck_sz), max_chunk_size(max_ck_sz), mask(stop_mask) {}
   bool ReinitWithFile(std::string file_name) override;
   std::shared_ptr<Chunk> GetNextChunk() override;
 
 private:
-  int min_chunk_size = 4096 + 2048;
-  int max_chunk_size = 8192 + 1048;
-  const uint64_t mask = (1LL << 13) - 1;
-  
+  const int min_chunk_size;
+  const int max_chunk_size;
+  const uint64_t mask;
 
   mapped_file file;
   uint8_t *file_read_ptr = nullptr;

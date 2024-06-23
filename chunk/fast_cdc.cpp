@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <glog/logging.h>
 namespace Delta {
-FastCDC::FastCDC() {}
 
 bool FastCDC::ReinitWithFile(std::string file_name) {
   this->file = std::move(mapped_file(file_name));
