@@ -13,7 +13,7 @@ type = "finesse"
 [chunker]
 type = "rabin-cdc"
 min_chunk_size = 4096
-max_chunk_size = 12288
+max_chunk_size = 16384
 stop_mask = 8191 # 1 << 13 - 1
 
 [storage]
