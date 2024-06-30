@@ -2,7 +2,6 @@
 #include "feature/features.h"
 #include "utils/gear.h"
 #include <cstdint>
-#include <glog/logging.h>
 namespace Delta {
 static uint64_t M[] = {
     1, 4, 9, 23, 37, 45, 179, 286, 437, 920, 1014, 2987,
