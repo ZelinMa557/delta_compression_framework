@@ -1,0 +1,53 @@
+#include <fstream>
+#include <glog/logging.h>
+#include <iostream>
+#include <optional>
+#include <sstream>
+#include <string>
+namespace Delta {
+struct FileMeta {
+  std::string file_name;
+  uint32_t start_chunk_id;
+  uint32_t end_chunk_id;
+};
+
+std::optional<FileMeta> GetFileMetaByName(const std::string &meta_path,
+                                          const std::string &file_name) {
+  std::ifstream inFile(meta_path, std::ios::in);
+  if (!inFile.is_open()) {
+    LOG(FATAL) << "Fail to open " << meta_path;
+  }
+  FileMeta meta;
+  std::string line;
+  int foundInteger = -1;
+  while (getline(inFile, line)) {
+    std::istringstream iss(line);
+    if (iss >> meta.file_name >> meta.start_chunk_id >> meta.end_chunk_id) {
+      if (meta.file_name == file_name)
+        return meta;
+    }
+  }
+  return std::nullopt;
+}
+
+class FileMetaWriter {
+public:
+  FileMetaWriter(const std::string &path) {
+    out_ = std::ofstream(path, std::ios::out);
+    if (!out_.is_open()) {
+      LOG(FATAL) << "Failed to open file " << path;
+    }
+  }
+  ~FileMetaWriter() {
+    if (out_.is_open())
+      out_.close();
+  }
+  void Write(const FileMeta &meta) {
+    out_ << meta.file_name << " " << meta.start_chunk_id << " "
+         << meta.end_chunk_id << std::endl;
+  }
+
+private:
+  std::ofstream out_;
+};
+} // namespace Delta
