@@ -7,11 +7,11 @@
 #include "index/super_feature_index.h"
 #include "storage/storage.h"
 #include <filesystem>
+#include <iostream>
 #include <map>
 #include <string>
-#include <iostream>
 using namespace Delta;
-
+DEFINE_string(feature, "finesse", "choice: finesse, odess");
 int hamming_distance(uint64_t a, uint64_t b) {
   uint64_t c = a ^ b;
   int result = 0;
@@ -31,7 +31,12 @@ int main(int argc, char *argv[]) {
   std::map<int, int> hamming_distance_count;
   auto chunker = FastCDC(4096, 4096 * 4, 8192);
   auto dedup = Dedup(dedup_path);
-  auto index = SuperFeatureIndex(SuperFeatureIndex::SuperFeatureType::Odess);
+  SuperFeatureIndex::SuperFeatureType feature_type;
+  if (FLAGS_feature == "finesse")
+    feature_type == SuperFeatureIndex::SuperFeatureType::Finesse;
+  else if (FLAGS_feature == "odess")
+    feature_type == SuperFeatureIndex::SuperFeatureType::Odess;
+  auto index = SuperFeatureIndex(feature_type);
   auto storage =
       Storage(data_path, meta_path, std::make_unique<XDelta>(), true, 200);
   for (const auto &entry :
@@ -54,16 +59,19 @@ int main(int argc, char *argv[]) {
           storage.WriteBaseChunk(chunk);
         } else {
           storage.WriteDeltaChunk(chunk, base_chunk_id.value());
-          auto base_chunk_feature = CRCSimHashFeature(storage.GetChunkContent(base_chunk_id.value()));
+          auto base_chunk_feature =
+              CRCSimHashFeature(storage.GetChunkContent(base_chunk_id.value()));
           auto chunk_feature = CRCSimHashFeature(chunk);
-          hamming_distance_count[hamming_distance(base_chunk_feature, chunk_feature)]++;
+          hamming_distance_count[hamming_distance(base_chunk_feature,
+                                                  chunk_feature)]++;
         }
       }
     }
   }
 
   for (const auto &[hamming_distance, count] : hamming_distance_count) {
-    std::cout << "hamming_distance " << hamming_distance << " count " << count << std::endl;
+    std::cout << "hamming_distance " << hamming_distance << " count " << count
+              << std::endl;
   }
   return 0;
 }
