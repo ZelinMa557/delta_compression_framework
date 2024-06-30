@@ -13,6 +13,6 @@ uint64_t CRCSimHashFeature(std::shared_ptr<Chunk> chunk,
     crc_result[i] = crc32c::Crc32c(buf, sub_chunk_size);
     buf += sub_chunk_size;
   }
-  return simhash::simhash(crc_result);
+  return simhash::simhash_ex(crc_result);
 }
 } // namespace Delta

@@ -13,7 +13,7 @@
 using namespace Delta;
 
 int hamming_distance(uint64_t a, uint64_t b) {
-  uint64_t c = a & b;
+  uint64_t c = a ^ b;
   int result = 0;
   for (int i = 0; i < 64; i++) {
     result += (c & 1);
