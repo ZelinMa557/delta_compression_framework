@@ -1,7 +1,7 @@
-task = "recover_single"
+task = "recover_all"
 chunk_data_path = "./test_data/default.data"
 chunk_meta_path = "./test_data/default.meta"
 file_meta_path = "./test_data/default.file"
 
 file_to_recover = "glib-2.70.1.tar"
-output_dir = "./test_data"
+output_dir = "./test_data/glib2"
