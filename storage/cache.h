@@ -1,4 +1,6 @@
 #pragma once
+#include <iomanip>
+#include <iostream>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -11,6 +13,17 @@ public:
     dummy_tail = new Node;
     dummy_head->next = dummy_tail;
     dummy_tail->prev = dummy_head;
+  }
+  ~ChunkCache() {
+    auto print_ratio = [](uint32_t a, uint32_t b) {
+      double ratio = (double)a / (double)b;
+      std::cout << std::fixed << std::setprecision(1);
+      std::cout << "(" << ratio * 100 << "%)" << std::endl;
+      std::cout << std::defaultfloat;
+    };
+    std::cout << "Storage::ChunkCache: cache hits ratio: ";
+    print_ratio(cache_hits_, cache_hits_ + cache_miss_);
+    std::cout << std::endl;
   }
   struct Node {
     Node *prev = nullptr;
@@ -29,5 +42,7 @@ private:
   std::unordered_map<uint32_t, Node *> map_;
   Node *dummy_head;
   Node *dummy_tail;
+  uint32_t cache_hits_ = 0;
+  uint32_t cache_miss_ = 0;
 };
 } // namespace Delta

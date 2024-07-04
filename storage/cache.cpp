@@ -2,8 +2,11 @@
 #include "storage/cache.h"
 namespace Delta {
 std::shared_ptr<Chunk> ChunkCache::get(uint32_t chunk_id) {
-  if (!map_.count(chunk_id))
+  if (!map_.count(chunk_id)) {
+    cache_miss_++;
     return nullptr;
+  }
+  cache_hits_++;
   auto *node = map_[chunk_id];
   auto *prev = node->prev;
   auto *next = node->next;
