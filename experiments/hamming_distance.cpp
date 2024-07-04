@@ -11,7 +11,6 @@
 #include <map>
 #include <string>
 using namespace Delta;
-DEFINE_string(feature, "finesse", "choice: finesse, odess");
 int hamming_distance(uint64_t a, uint64_t b) {
   uint64_t c = a ^ b;
   int result = 0;
@@ -31,11 +30,8 @@ int main(int argc, char *argv[]) {
   std::map<int, int> hamming_distance_count;
   auto chunker = FastCDC(4096, 4096 * 4, 8192);
   auto dedup = Dedup(dedup_path);
-  SuperFeatureIndex::SuperFeatureType feature_type;
-  if (FLAGS_feature == "finesse")
-    feature_type == SuperFeatureIndex::SuperFeatureType::Finesse;
-  else if (FLAGS_feature == "odess")
-    feature_type == SuperFeatureIndex::SuperFeatureType::Odess;
+  SuperFeatureIndex::SuperFeatureType feature_type =
+      SuperFeatureIndex::SuperFeatureType::Odess;
   auto index = SuperFeatureIndex(feature_type);
   auto storage =
       Storage(data_path, meta_path, std::make_unique<XDelta>(), true, 200);
