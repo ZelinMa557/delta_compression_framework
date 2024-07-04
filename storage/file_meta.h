@@ -57,4 +57,38 @@ public:
 private:
   std::ofstream out_;
 };
+
+class FileMetaReader {
+public:
+  FileMetaReader(const std::string &path) {
+    in_ = std::ifstream(path, std::ios::in);
+    if (!in_.is_open()) {
+      LOG(FATAL) << "Failed to open file " << path;
+    }
+  }
+  FileMetaReader() = default;
+  ~FileMetaReader() {
+    if (in_.is_open())
+      in_.close();
+  }
+  void Init(const std::string &path) {
+    in_ = std::ifstream(path, std::ios::in);
+    if (!in_.is_open()) {
+      LOG(FATAL) << "Failed to open file " << path;
+    }
+  }
+  std::optional<FileMeta> Next() {
+    FileMeta meta;
+    std::string line;
+    int foundInteger = -1;
+    if (!getline(in_, line))
+      return std::nullopt;
+    std::istringstream iss(line);
+    iss >> meta.file_name >> meta.start_chunk_id >> meta.end_chunk_id;
+    return meta;
+  }
+
+private:
+  std::ifstream in_;
+};
 } // namespace Delta

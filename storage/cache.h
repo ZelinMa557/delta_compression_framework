@@ -18,7 +18,7 @@ public:
     auto print_ratio = [](uint32_t a, uint32_t b) {
       double ratio = (double)a / (double)b;
       std::cout << std::fixed << std::setprecision(1);
-      std::cout << "(" << ratio * 100 << "%)" << std::endl;
+      std::cout << ratio * 100 << "%" << std::endl;
       std::cout << std::defaultfloat;
     };
     std::cout << "Storage::ChunkCache: cache hits ratio: ";
