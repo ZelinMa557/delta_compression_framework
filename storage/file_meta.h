@@ -38,9 +38,16 @@ public:
       LOG(FATAL) << "Failed to open file " << path;
     }
   }
+  FileMetaWriter() = default;
   ~FileMetaWriter() {
     if (out_.is_open())
       out_.close();
+  }
+  void Init(const std::string &path) {
+    out_ = std::ofstream(path, std::ios::out);
+    if (!out_.is_open()) {
+      LOG(FATAL) << "Failed to open file " << path;
+    }
   }
   void Write(const FileMeta &meta) {
     out_ << meta.file_name << " " << meta.start_chunk_id << " "

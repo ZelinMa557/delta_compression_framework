@@ -1,6 +1,7 @@
 #include "chunk/chunker.h"
 #include "encoder/encoder.h"
 #include "index/index.h"
+#include "storage/file_meta.h"
 #include "storage/storage.h"
 #include "dedup/dedup.h"
 #include <memory>
@@ -21,6 +22,8 @@ private:
   std::unique_ptr<Index> index_;
   std::unique_ptr<Dedup> dedup_;
   std::unique_ptr<Storage> storage_;
+
+  FileMetaWriter file_meta_writer_;
 
   uint32_t base_chunk_count_ = 0;
   uint32_t delta_chunk_count_ = 0;

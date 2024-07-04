@@ -59,11 +59,18 @@ std::shared_ptr<Chunk> Storage::GetChunkContent(chunk_id id) {
   ChunkMeta meta;
   fread(&meta, sizeof(ChunkMeta), 1, meta_);
   fseek(data_, meta.offset, SEEK_SET);
-  auto result = Chunk::FromFileStream(data_, meta.size, id);
-  LOG(INFO) << "get base chunk " << result->id() << " size " << result->len();
+  auto raw_content = Chunk::FromFileStream(data_, meta.size, id);
   fseek(meta_, 0, SEEK_END);
   fseek(data_, 0, SEEK_END);
-  return result;
+  if (meta.type == DeltaChunk) {
+    auto base_chunk = cache_.get(meta.base_chunk_id);
+    if (nullptr == base_chunk) {
+      base_chunk = GetChunkContent(meta.base_chunk_id);
+      cache_.add(meta.base_chunk_id, base_chunk);
+    }
+    return encoder_->decode(base_chunk, raw_content);
+  }
+  return raw_content;
 }
 
 void Storage::WriteDuplicateChunk(std::shared_ptr<Chunk> chunk,

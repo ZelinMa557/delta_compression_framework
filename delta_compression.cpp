@@ -13,11 +13,16 @@
 #include <vector>
 namespace Delta {
 void DeltaCompression::AddFile(const std::string &file_name) {
+  FileMeta file_meta;
+  file_meta.file_name = file_name;
+  file_meta.start_chunk_id = -1;
   this->chunker_->ReinitWithFile(file_name);
   while (true) {
     auto chunk = chunker_->GetNextChunk();
     if (nullptr == chunk)
       break;
+    if (-1 == file_meta.start_chunk_id)
+      file_meta.start_chunk_id = chunk->id();
     uint32_t dedup_base_id = dedup_->ProcessChunk(chunk);
     // duplicate chunk
     if (dedup_base_id != chunk->id()) {
@@ -34,7 +39,9 @@ void DeltaCompression::AddFile(const std::string &file_name) {
       storage_->WriteDeltaChunk(chunk, base_chunk_id.value());
       delta_chunk_count_++;
     }
+    file_meta.end_chunk_id = chunk->id();
   }
+  file_meta_writer_.Write(file_meta);
 }
 
 DeltaCompression::~DeltaCompression() {
@@ -111,5 +118,6 @@ DeltaCompression::DeltaCompression() {
   }
   this->storage_ = std::make_unique<Storage>(
       chunk_data_path, chunk_meta_path, std::move(encoder), true, cache_size);
+  this->file_meta_writer_.Init(file_meta_path);
 }
 } // namespace Delta
