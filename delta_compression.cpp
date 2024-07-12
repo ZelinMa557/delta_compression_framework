@@ -33,16 +33,17 @@ void DeltaCompression::AddFile(const std::string &file_name) {
       duplicate_chunk_count_++;
       continue;
     }
-    total_size_compressed_ += chunk->len();
     auto base_chunk_id = index_->GetBaseChunkID(chunk, true);
     if (base_chunk_id.value() == chunk->id()) {
       storage_->WriteBaseChunk(chunk);
       base_chunk_count_++;
-      chunk_size_before_delta_ += chunk->len();
+      total_size_compressed_ += chunk->len();
     } else {
+      chunk_size_before_delta_ += chunk->len();
       int delta_size = storage_->WriteDeltaChunk(chunk, base_chunk_id.value());
       delta_chunk_count_++;
       chunk_size_after_delta_ += delta_size;
+      total_size_compressed_ += delta_size;
     }
     file_meta.end_chunk_id = chunk->id();
   }
@@ -65,9 +66,8 @@ DeltaCompression::~DeltaCompression() {
   print_ratio(delta_chunk_count_, chunk_count);
   std::cout << "Duplicate chunk count: " << duplicate_chunk_count_;
   print_ratio(duplicate_chunk_count_, chunk_count);
-  std::cout << "DCR (Delta Compression Ratio): "
-            << (double)total_size_origin_ / (double)total_size_compressed_
-            << std::endl;
+  std::cout << "DCR (Delta Compression Ratio): ";
+  print_ratio(total_size_origin_, total_size_compressed_);
   std::cout << "DCE (Delta Compression Efficiency): ";
   print_ratio(chunk_size_after_delta_, chunk_size_before_delta_);
 }
@@ -82,7 +82,8 @@ DeltaCompression::DeltaCompression() {
 
   auto chunker = config->get_table("chunker");
   auto chunker_type = *chunker->get_as<std::string>("type");
-  if (chunker_type == "rabin-cdc" || chunker_type == "fast-cdc") {
+  if (chunker_type == "rabin-cdc" || chunker_type == "fast-cdc" ||
+      chunker_type == "crc-cdc") {
     auto min_chunk_size = *chunker->get_as<int64_t>("min_chunk_size");
     auto max_chunk_size = *chunker->get_as<int64_t>("max_chunk_size");
     auto stop_mask = *chunker->get_as<int64_t>("stop_mask");
@@ -92,25 +93,19 @@ DeltaCompression::DeltaCompression() {
       LOG(INFO) << "Add RabinCDC chunker, min_chunk_size=" << min_chunk_size
                 << " max_chunk_size=" << max_chunk_size
                 << " stop_mask=" << stop_mask;
-    } else {
+    } else if (chunker_type == "fast-cdc") {
       this->chunker_ =
           std::make_unique<FastCDC>(min_chunk_size, max_chunk_size, stop_mask);
       LOG(INFO) << "Add FastCDC chunker, min_chunk_size=" << min_chunk_size
                 << " max_chunk_size=" << max_chunk_size
                 << " stop_mask=" << stop_mask;
+    } else if (chunker_type == "crc-cdc") {
+      this->chunker_ =
+          std::make_unique<CRC_CDC>(min_chunk_size, max_chunk_size, stop_mask);
+      LOG(INFO) << "Add CRC_CDC chunker, min_chunk_size=" << min_chunk_size
+                << " max_chunk_size=" << max_chunk_size
+                << " stop_mask=" << stop_mask;
     }
-  } else if (chunker_type == "crc-cdc") {
-    auto min_sub_chunk_size = *chunker->get_as<int64_t>("min_sub_chunk_size");
-    auto max_sub_chunk_size = *chunker->get_as<int64_t>("max_sub_chunk_size");
-    auto stop_mask = *chunker->get_as<int64_t>("stop_mask");
-    auto sub_chunk_count = *chunker->get_as<int64_t>("sub_chunk_count");
-    this->chunker_ = std::make_unique<CRC_CDC>(
-        min_sub_chunk_size, max_sub_chunk_size, stop_mask, sub_chunk_count);
-    LOG(INFO) << "Add CRC CDC chunker, min_sub_chunk_size="
-              << min_sub_chunk_size
-              << " max_sub_chunk_size=" << max_sub_chunk_size
-              << " stop_mask=" << stop_mask
-              << " sub_chunk_count=" << sub_chunk_count;
   } else {
     LOG(FATAL) << "Unknown chunker type " << chunker_type;
   }

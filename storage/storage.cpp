@@ -49,7 +49,7 @@ int Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
 
   fwrite(delta_chunk->buf(), 1, delta_chunk->len(), data_);
   fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
-  LOG(INFO) << "write delta chunk " << chunk->id() << ", len " << chunk->len();
+  LOG(INFO) << "write delta chunk " << chunk->id() << ", len " << delta_chunk->len();
   return delta_chunk->len();
 }
 

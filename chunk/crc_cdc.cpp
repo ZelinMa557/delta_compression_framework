@@ -1,4 +1,5 @@
 #include "chunk/crc_cdc.h"
+#include "chunk/chunk.h"
 #include <crc32c/crc32c.h>
 #include <glog/logging.h>
 namespace Delta {
@@ -22,29 +23,15 @@ std::shared_ptr<Chunk> CRC_CDC::GetNextChunk() {
   std::vector<uint32_t> crc_sigs;
   int total_size = 0;
   uint8_t *chunk_start_pos = file_read_ptr;
-  crc_sigs.reserve(sub_chunk_count_);
-  for (int i = 0; i < sub_chunk_count_; i++) {
-    if (remaining_file_len < max_sub_chunk_size_) {
-      total_size += remaining_file_len;
-      crc_sigs.push_back(crc32c::Extend(0, file_read_ptr, remaining_file_len));
-      remaining_file_len = 0;
+  auto chunk_size = std::min(min_chunk_size_, remaining_file_len);
+  auto crc_sig = crc32c::Extend(0, file_read_ptr, chunk_size);
+  for (; chunk_size < std::min(max_chunk_size_, remaining_file_len); chunk_size++) {
+    if ((crc_sig & stop_mask_) == 0)
       break;
-    }
-    int cur_sub_chk_size = min_sub_chunk_size_;
-    uint32_t crc32_sig = crc32c::Extend(0, file_read_ptr, cur_sub_chk_size);
-    for (; cur_sub_chk_size <= max_sub_chunk_size_;
-         cur_sub_chk_size += CRC_BATCH_SIZE) {
-      if (crc32_sig & stop_mask_ == 0)
-        break;
-      crc32_sig = crc32c::Extend(crc32_sig, file_read_ptr + cur_sub_chk_size,
-                                 CRC_BATCH_SIZE);
-    }
-    remaining_file_len -= cur_sub_chk_size;
-    file_read_ptr += cur_sub_chk_size;
-    crc_sigs.push_back(crc32_sig);
-    total_size += cur_sub_chk_size;
+    crc_sig = crc32c::Extend(crc_sig, file_read_ptr + chunk_size, 1);
   }
-  return CRC_Chunk::FromMemoryRef(chunk_start_pos, total_size,
-                                  get_next_chunk_id(), crc_sigs);
+  remaining_file_len -= chunk_size;
+  file_read_ptr += chunk_size;
+  return Chunk::FromMemoryRef(chunk_start_pos, chunk_size, get_next_chunk_id());
 }
 } // namespace Delta

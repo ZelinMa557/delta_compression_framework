@@ -34,5 +34,5 @@ std::vector<uint64_t> OdessFeature(std::shared_ptr<Chunk> chunk,
                                    uint64_t mask = default_odess_mask);
 
 uint64_t CRCSimHashFeature(std::shared_ptr<Chunk> chunk,
-                           const int sub_chunk = 64);
+                           const int sub_chunk = 128);
 } // namespace Delta
