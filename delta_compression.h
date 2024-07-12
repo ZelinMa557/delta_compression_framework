@@ -28,5 +28,10 @@ private:
   uint32_t base_chunk_count_ = 0;
   uint32_t delta_chunk_count_ = 0;
   uint32_t duplicate_chunk_count_ = 0;
+
+  size_t total_size_origin_ = 0;
+  size_t total_size_compressed_ = 0;
+  size_t chunk_size_before_delta_ = 0;
+  size_t chunk_size_after_delta_ = 0;
 };
 } // namespace Delta

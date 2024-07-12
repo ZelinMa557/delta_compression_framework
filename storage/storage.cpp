@@ -33,7 +33,7 @@ void Storage::WriteBaseChunk(std::shared_ptr<Chunk> chunk) {
   LOG(INFO) << "write base chunk " << chunk->id() << ", len " << chunk->len();
 }
 
-void Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
+int Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
                               chunk_id base_chunk_id) {
   auto base_chunk = cache_.get(base_chunk_id);
   if (nullptr == base_chunk) {
@@ -50,6 +50,7 @@ void Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
   fwrite(delta_chunk->buf(), 1, delta_chunk->len(), data_);
   fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
   LOG(INFO) << "write delta chunk " << chunk->id() << ", len " << chunk->len();
+  return delta_chunk->len();
 }
 
 std::shared_ptr<Chunk> Storage::GetChunkContent(chunk_id id) {

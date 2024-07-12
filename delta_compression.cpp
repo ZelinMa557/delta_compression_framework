@@ -5,6 +5,7 @@
 #include "chunk/rabin_cdc.h"
 #include "config.h"
 #include "encoder/xdelta.h"
+#include "index/naive_multi_index_hamming.h"
 #include "index/super_feature_index.h"
 #include "storage/storage.h"
 #include <glog/logging.h>
@@ -25,20 +26,23 @@ void DeltaCompression::AddFile(const std::string &file_name) {
     if (-1 == file_meta.start_chunk_id)
       file_meta.start_chunk_id = chunk->id();
     uint32_t dedup_base_id = dedup_->ProcessChunk(chunk);
+    total_size_origin_ += chunk->len();
     // duplicate chunk
     if (dedup_base_id != chunk->id()) {
       storage_->WriteDuplicateChunk(chunk, dedup_base_id);
       duplicate_chunk_count_++;
       continue;
     }
-
+    total_size_compressed_ += chunk->len();
     auto base_chunk_id = index_->GetBaseChunkID(chunk, true);
     if (base_chunk_id.value() == chunk->id()) {
       storage_->WriteBaseChunk(chunk);
       base_chunk_count_++;
+      chunk_size_before_delta_ += chunk->len();
     } else {
-      storage_->WriteDeltaChunk(chunk, base_chunk_id.value());
+      int delta_size = storage_->WriteDeltaChunk(chunk, base_chunk_id.value());
       delta_chunk_count_++;
+      chunk_size_after_delta_ += delta_size;
     }
     file_meta.end_chunk_id = chunk->id();
   }
@@ -61,6 +65,11 @@ DeltaCompression::~DeltaCompression() {
   print_ratio(delta_chunk_count_, chunk_count);
   std::cout << "Duplicate chunk count: " << duplicate_chunk_count_;
   print_ratio(duplicate_chunk_count_, chunk_count);
+  std::cout << "DCR (Delta Compression Ratio): "
+            << (double)total_size_origin_ / (double)total_size_compressed_
+            << std::endl;
+  std::cout << "DCE (Delta Compression Efficiency): ";
+  print_ratio(chunk_size_after_delta_, chunk_size_before_delta_);
 }
 
 DeltaCompression::DeltaCompression() {
@@ -114,6 +123,8 @@ DeltaCompression::DeltaCompression() {
   } else if (feature_type == "odess") {
     this->index_ = std::make_unique<SuperFeatureIndex>(
         SuperFeatureIndex::SuperFeatureType::Odess);
+  } else if (feature_type == "crc-simhash") {
+    this->index_ = std::make_unique<NaiveMIH>();
   } else {
     LOG(FATAL) << "Unknown feature type " << feature_type;
   }
