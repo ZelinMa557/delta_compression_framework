@@ -10,7 +10,7 @@ public:
   CRC_Chunk(uint8_t *buf, bool needs_to_free, int length, chunk_id id,
             std::vector<uint32_t> &crc_sigs)
       : Chunk(buf, needs_to_free, length, id), crc_sigs_(std::move(crc_sigs)) {}
-  const std::vector<uint32_t> &crc_sigs() const {}
+  const std::vector<uint32_t> &crc_sigs() const { return crc_sigs_; }
   static std::shared_ptr<Chunk> FromMemory(void *start, size_t size,
                                            chunk_id id,
                                            std::vector<uint32_t> &crc_sigs) {
@@ -25,14 +25,14 @@ public:
                  std::vector<uint32_t> &crc_sigs) {
     auto buf = new uint8_t[size];
     fread(buf, 1, size, fp);
-    auto crc_chunk = new CRC_Chunk(buf, true, size, id, crc_sigs);
+    auto crc_chunk = new CRC_Chunk((uint8_t*)buf, true, size, id, crc_sigs);
     return std::shared_ptr<Chunk>(crc_chunk);
   }
 
   static std::shared_ptr<Chunk>
   FromMemoryRef(void *start, size_t size, uint32_t id,
-                const std::vector<uint32_t> &crc_sigs) {
-    auto chunk = std::make_shared<CRC_Chunk>(static_cast<uint8_t *>(start),
+                std::vector<uint32_t> &crc_sigs) {
+    auto chunk = std::make_shared<CRC_Chunk>((uint8_t*)start,
                                              false, size, id, crc_sigs);
     return chunk;
   }

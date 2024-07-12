@@ -11,7 +11,7 @@ struct FileMeta {
   uint32_t end_chunk_id;
 };
 
-std::optional<FileMeta> GetFileMetaByName(const std::string &meta_path,
+inline std::optional<FileMeta> GetFileMetaByName(const std::string &meta_path,
                                           const std::string &file_name) {
   std::ifstream inFile(meta_path, std::ios::in);
   if (!inFile.is_open()) {
