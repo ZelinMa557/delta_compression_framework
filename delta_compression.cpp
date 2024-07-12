@@ -1,5 +1,6 @@
 #include "delta_compression.h"
 #include "chunk/chunk.h"
+#include "chunk/crc_cdc.h"
 #include "chunk/fast_cdc.h"
 #include "chunk/rabin_cdc.h"
 #include "config.h"
@@ -89,6 +90,18 @@ DeltaCompression::DeltaCompression() {
                 << " max_chunk_size=" << max_chunk_size
                 << " stop_mask=" << stop_mask;
     }
+  } else if (chunker_type == "crc-cdc") {
+    auto min_sub_chunk_size = *chunker->get_as<int64_t>("min_sub_chunk_size");
+    auto max_sub_chunk_size = *chunker->get_as<int64_t>("max_sub_chunk_size");
+    auto stop_mask = *chunker->get_as<int64_t>("stop_mask");
+    auto sub_chunk_count = *chunker->get_as<int64_t>("sub_chunk_count");
+    this->chunker_ = std::make_unique<CRC_CDC>(
+        min_sub_chunk_size, max_sub_chunk_size, stop_mask, sub_chunk_count);
+    LOG(INFO) << "Add CRC CDC chunker, min_sub_chunk_size="
+              << min_sub_chunk_size
+              << " max_sub_chunk_size=" << max_sub_chunk_size
+              << " stop_mask=" << stop_mask
+              << " sub_chunk_count=" << sub_chunk_count;
   } else {
     LOG(FATAL) << "Unknown chunker type " << chunker_type;
   }
