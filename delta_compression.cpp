@@ -33,23 +33,38 @@ void DeltaCompression::AddFile(const std::string &file_name) {
       duplicate_chunk_count_++;
       continue;
     }
-    auto base_chunk_id = index_->GetBaseChunkID(chunk, true);
-    if (base_chunk_id.value() == chunk->id()) {
+
+    auto write_base_chunk = [this](const std::shared_ptr<Chunk> &chunk) {
       storage_->WriteBaseChunk(chunk);
       base_chunk_count_++;
       total_size_compressed_ += chunk->len();
-    } else {
+    };
+
+    auto write_delta_chunk = [this](const std::shared_ptr<Chunk> &chunk, const uint32_t base_chunk_id) {
       chunk_size_before_delta_ += chunk->len();
-      int delta_size = storage_->WriteDeltaChunk(chunk, base_chunk_id.value());
-      if (delta_size == chunk->len()) {
-        base_chunk_count_++;
-        total_size_compressed_ += chunk->len();
-      } else {
+      storage_->WriteDeltaChunk(chunk, base_chunk_id);
+      
         delta_chunk_count_++;
-        chunk_size_after_delta_ += delta_size;
-        total_size_compressed_ += delta_size;
-      }
+        chunk_size_after_delta_ += chunk->len();
+        total_size_compressed_ += chunk->len();
+      
+    };
+
+    auto feature = (*feature_)(chunk);
+    auto base_chunk_id = index_->GetBaseChunkID(feature);
+    if (!base_chunk_id.has_value()) {
+      index_->AddFeature(feature, chunk->id());
+      write_base_chunk(chunk);
+      continue;
     }
+
+    auto delta_chunk = storage_->GetDeltaEncodedChunk(chunk, base_chunk_id.value());
+    if ((*filter_)(chunk, delta_chunk)) {
+      index_->AddFeature(feature, chunk->id());
+      write_base_chunk(chunk);
+      continue;
+    }
+    write_delta_chunk(delta_chunk, base_chunk_id.value());
     file_meta.end_chunk_id = chunk->id();
   }
   file_meta_writer_.Write(file_meta);
@@ -117,13 +132,15 @@ DeltaCompression::DeltaCompression() {
 
   auto feature = config->get_table("feature");
   auto feature_type = *feature->get_as<std::string>("type");
+
   if (feature_type == "finesse") {
-    this->index_ = std::make_unique<SuperFeatureIndex>(
-        SuperFeatureIndex::SuperFeatureType::Finesse);
+    this->feature_ = std::make_unique<FinesseFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
+    this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "odess") {
-    this->index_ = std::make_unique<SuperFeatureIndex>(
-        SuperFeatureIndex::SuperFeatureType::Odess);
+    this->feature_ = std::make_unique<OdessFeature>(default_odess_sf_cnt, default_odess_sf_subf, default_odess_mask);
+    this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "crc-simhash") {
+    this->feature_ = std::make_unique<SimHashFeature>();
     this->index_ = std::make_unique<NaiveMIH>();
   } else {
     LOG(FATAL) << "Unknown feature type " << feature_type;
@@ -143,5 +160,8 @@ DeltaCompression::DeltaCompression() {
   this->storage_ = std::make_unique<Storage>(
       chunk_data_path, chunk_meta_path, std::move(encoder), true, cache_size);
   this->file_meta_writer_.Init(file_meta_path);
+
+  // TODO
+  this->filter_ = std::make_unique<FilterByDeltaEncoder>();
 }
 } // namespace Delta

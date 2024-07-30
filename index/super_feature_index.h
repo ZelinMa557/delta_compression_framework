@@ -10,7 +10,6 @@ using chunk_id = uint32_t;
 class Chunk;
 class SuperFeatureIndex : public Index {
 public:
-  enum class SuperFeatureType { Finesse, Odess };
   SuperFeatureIndex(int super_feature_count = 3)
       : super_feature_count_(super_feature_count) {
     for (int i = 0; i < super_feature_count_; i++) {
@@ -24,7 +23,6 @@ public:
 
 private:
   std::vector<std::unordered_map<uint64_t, chunk_id>> index_;
-  SuperFeatureType feature_type_;
   int super_feature_count_;
   std::function<std::vector<uint64_t>(std::shared_ptr<Chunk>, const int)>
       get_feature_;

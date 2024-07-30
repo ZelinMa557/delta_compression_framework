@@ -4,6 +4,7 @@
 #include "storage/file_meta.h"
 #include "storage/storage.h"
 #include "dedup/dedup.h"
+#include "filter_strategy.h"
 #include <memory>
 #include <string>
 namespace Delta {
@@ -22,6 +23,8 @@ private:
   std::unique_ptr<Index> index_;
   std::unique_ptr<Dedup> dedup_;
   std::unique_ptr<Storage> storage_;
+  std::unique_ptr<FeatureCalculator> feature_;
+  std::unique_ptr<FilterStrategy> filter_;
 
   FileMetaWriter file_meta_writer_;
 

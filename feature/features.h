@@ -37,7 +37,7 @@ private:
 class OdessFeature : FeatureCalculator {
 public:
   OdessFeature(const int sf_cnt = default_odess_sf_cnt,
-               const int sf_subf = default_finesse_sf_subf,
+               const int sf_subf = default_odess_sf_subf,
                const int mask = default_odess_mask)
       : sf_cnt_(sf_cnt_), sf_subf_(sf_subf), mask_(mask) {}
 
