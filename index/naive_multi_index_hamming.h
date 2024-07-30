@@ -7,7 +7,8 @@ namespace Delta {
 // this is only for experiments
 class NaiveMIH : public Index {
 public:
-  std::optional<chunk_id> GetBaseChunkID(std::shared_ptr<Chunk> chunk, bool add_new_base_chunk);
+  std::optional<chunk_id> GetBaseChunkID(const Feature &feat);
+  void AddFeature(const Feature &feat, chunk_id id);
   bool RecoverFromFile(const std::string &path) { return true; }
   bool DumpToFile(const std::string &path) { return true;}
 private:

@@ -7,9 +7,8 @@
 namespace Delta {
 using chunk_id = uint32_t;
 std::optional<chunk_id>
-SuperFeatureIndex::GetBaseChunkID(std::shared_ptr<Chunk> chunk,
-                                  bool add_new_base_chunk) {
-  auto super_feature = get_feature_(chunk, super_feature_count_);
+SuperFeatureIndex::GetBaseChunkID(const Feature &feat) {
+  const auto &super_feature = std::get<std::vector<uint64_t>>(feat);
   std::optional<chunk_id> result = std::nullopt;
   for (int i = 0; i < super_feature_count_; i++) {
     // get a matched super feature
@@ -19,13 +18,14 @@ SuperFeatureIndex::GetBaseChunkID(std::shared_ptr<Chunk> chunk,
       break;
     }
   }
-  if (add_new_base_chunk && !result.has_value()) {
-    for (int i = 0; i < super_feature_count_; i++) {
-      index_[i][super_feature[i]] = chunk->id();
-    }
-    result = chunk->id();
-  }
   return result;
+}
+
+void SuperFeatureIndex::AddFeature(const Feature &feat, chunk_id id) {
+  const auto &super_feature = std::get<std::vector<uint64_t>>(feat);
+  for (int i = 0; i < super_feature_count_; i++) {
+    index_[i][super_feature[i]] = id;
+  }
 }
 
 bool SuperFeatureIndex::DumpToFile(const std::string &path) {
