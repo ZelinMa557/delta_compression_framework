@@ -6,7 +6,7 @@ namespace Delta {
 std::optional<chunk_id> NaiveMIH::GetBaseChunkID(std::shared_ptr<Chunk> chunk, bool add_new_base_chunk) {
   uint64_t signature = CRCSimHashFeature(chunk);
   chunk_id best_chunk_id = -1;
-  int min_distance = 2;
+  int min_distance = 4;
   if (hashes_.empty()) {
     for (int i = 0; i < 8; i++)
       hashes_.push_back({});

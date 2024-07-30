@@ -41,6 +41,10 @@ int Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
     cache_.add(base_chunk_id, base_chunk);
   }
   auto delta_chunk = encoder_->encode(base_chunk, chunk);
+  if (((double)(delta_chunk->len())/(double)(chunk->len())) > 1.0) {
+    WriteBaseChunk(chunk);
+    return chunk->len();
+  }
   ChunkMeta meta;
   meta.offset = ftell(data_);
   meta.base_chunk_id = base_chunk_id;

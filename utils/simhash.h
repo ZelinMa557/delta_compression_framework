@@ -165,6 +165,8 @@ hash_t simhash2(const std::vector<hash_t>& hashes);
 
 uint64_t simhash_ex(const std::vector<hash_t>& hashes);
 
+uint64_t simhash_ex(uint8_t *content, size_t size);
+
 #ifdef __AVX2__
 hash_t simhash_avx2(const hash_t* hashes, uint32_t hash_num);
 

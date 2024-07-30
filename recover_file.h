@@ -7,6 +7,6 @@ public:
   void RecoverSingleFile();
   void RecoverAllFiles();
 private:
-  void RecoverSingle(const FileMeta &meta, const std::string &path);
+  void RecoverSingle(const FileMeta &meta, const std::string &path, Storage &storage);
 };
 }

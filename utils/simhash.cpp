@@ -108,6 +108,48 @@ uint64_t simhash_ex(const std::vector<hash_t>& hashes) {
   return result;
 }
 
+uint64_t simhash_ex(uint8_t *content, size_t size) {
+  hash_t result = 0;
+  // Initialize counts to 0
+  const int BIT = 8;
+  std::vector<long> counts(BIT, 0);
+
+  auto first_hash = content[0];
+  for (size_t i = 0; i < BIT; ++i) {
+    counts[i] += (first_hash & 1) ? 1 : -1;
+    first_hash >>= 1;
+  }
+  auto last_hash = first_hash;
+
+  // Count the number of 1's, 0's in each position of the hashes
+  for (int i = 1; i < size; ++i) {
+    auto hash = content[i];
+    for (size_t i = 0; i < BIT; ++i) {
+      if (last_hash ^ hash) {
+        counts[i] += (hash & 1) ? 2 : -2;
+      } else {
+        counts[i] += (hash & 1) ? 1 : -1;
+      }
+      // counts[i] += (hash & 1) ? ((last_hash & hash & 1) ? 3 : 2) : -3;
+      hash >>= 1;
+      last_hash >>= 1;
+    }
+    last_hash = content[i];
+  }
+
+  // Produce the result
+  for (size_t i = 0; i < 64; i += 2) {
+    uint64_t val = 0;
+    if (counts[i] > 1) {
+      val = 0b11;
+    } else if (counts[i] > 0) {
+      val = 0b01;
+    }
+    result |= (val << i);
+  }
+  return result;
+}
+
 #ifdef __AVX2__
 hash_t simhash_avx2(const hash_t* hashes, const uint32_t hash_num) {
   // Initialize counts to 0

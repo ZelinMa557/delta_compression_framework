@@ -11,7 +11,7 @@ public:
     long unsigned int delta_chunk_size = 0;
     int result = xd3_encode_memory(new_chunk->buf(), new_chunk->len(),
                                    base_chunk->buf(), base_chunk->len(),
-                                   chunk_buffer_, &delta_chunk_size, 10000, 0);
+                                   chunk_buffer_, &delta_chunk_size, 32768, 0);
     if (0 != result) {
       LOG(FATAL) << "some wrong happens in XDelta encode, returns " << result << " delta chunk size " << delta_chunk_size;
     }
@@ -24,7 +24,7 @@ public:
     long unsigned int decode_chunk_size = 0;
     if (0 != xd3_decode_memory(delta->buf(), delta->len(), base->buf(),
                                base->len(), chunk_buffer_, &decode_chunk_size,
-                               10000, 0)) {
+                               32768, 0)) {
       LOG(FATAL) << "some wrong happens in XDelta decode, returns ";
       return nullptr;
     }
@@ -33,6 +33,6 @@ public:
   }
 
 private:
-  uint8_t chunk_buffer_[10000];
+  uint8_t chunk_buffer_[32768];
 };
 } // namespace Delta

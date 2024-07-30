@@ -41,9 +41,14 @@ void DeltaCompression::AddFile(const std::string &file_name) {
     } else {
       chunk_size_before_delta_ += chunk->len();
       int delta_size = storage_->WriteDeltaChunk(chunk, base_chunk_id.value());
-      delta_chunk_count_++;
-      chunk_size_after_delta_ += delta_size;
-      total_size_compressed_ += delta_size;
+      if (delta_size == chunk->len()) {
+        base_chunk_count_++;
+        total_size_compressed_ += chunk->len();
+      } else {
+        delta_chunk_count_++;
+        chunk_size_after_delta_ += delta_size;
+        total_size_compressed_ += delta_size;
+      }
     }
     file_meta.end_chunk_id = chunk->id();
   }
