@@ -33,7 +33,8 @@ void Storage::WriteBaseChunk(std::shared_ptr<Chunk> chunk) {
   LOG(INFO) << "write base chunk " << chunk->id() << ", len " << chunk->len();
 }
 
-int Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
+std::shared_ptr<Chunk>
+Storage::GetDeltaEncodedChunk(std::shared_ptr<Chunk> chunk,
                               chunk_id base_chunk_id) {
   auto base_chunk = cache_.get(base_chunk_id);
   if (nullptr == base_chunk) {
@@ -41,10 +42,11 @@ int Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
     cache_.add(base_chunk_id, base_chunk);
   }
   auto delta_chunk = encoder_->encode(base_chunk, chunk);
-  if (((double)(delta_chunk->len())/(double)(chunk->len())) > 1.0) {
-    WriteBaseChunk(chunk);
-    return chunk->len();
-  }
+  return delta_chunk;
+}
+
+int Storage::WriteDeltaChunk(std::shared_ptr<Chunk> delta_chunk,
+                             chunk_id base_chunk_id) {
   ChunkMeta meta;
   meta.offset = ftell(data_);
   meta.base_chunk_id = base_chunk_id;
@@ -53,7 +55,8 @@ int Storage::WriteDeltaChunk(std::shared_ptr<Chunk> chunk,
 
   fwrite(delta_chunk->buf(), 1, delta_chunk->len(), data_);
   fwrite(&meta, sizeof(ChunkMeta), 1, meta_);
-  LOG(INFO) << "write delta chunk " << chunk->id() << ", len " << delta_chunk->len();
+  LOG(INFO) << "write delta chunk " << delta_chunk->id() << ", len "
+            << delta_chunk->len();
   return delta_chunk->len();
 }
 
