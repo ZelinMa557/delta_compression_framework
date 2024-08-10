@@ -35,13 +35,26 @@ private:
   const int sf_subf_;
 };
 
+class NTransformFeature : public FeatureCalculator {
+public:
+  NTransformFeature(const int sf_cnt = 3, const int sf_subf = 4)
+      : sf_cnt_(sf_cnt), sf_subf_(sf_subf) {}
+
+  Feature operator()(std::shared_ptr<Chunk> chunk) override;
+
+private:
+  // grouped super features count
+  const int sf_cnt_;
+  // how much sub feature does a one super feature contain
+  const int sf_subf_;
+};
+
 class OdessFeature : public FeatureCalculator {
 public:
   OdessFeature(const int sf_cnt = default_odess_sf_cnt,
                const int sf_subf = default_odess_sf_subf,
                const int mask = default_odess_mask)
       : sf_cnt_(sf_cnt), sf_subf_(sf_subf), mask_(mask) {}
-
 
   Feature operator()(std::shared_ptr<Chunk> chunk) override;
 
@@ -54,15 +67,16 @@ private:
   const int mask_;
 };
 
-class SimHashFeature: public FeatureCalculator {
+class SimHashFeature : public FeatureCalculator {
 public:
   Feature operator()(std::shared_ptr<Chunk> chunk);
 };
 
-class CRCSimHashFeature: public FeatureCalculator {
+class CRCSimHashFeature : public FeatureCalculator {
 public:
-  CRCSimHashFeature(int sub_chunk = 128): sub_chunk_(sub_chunk) {}
+  CRCSimHashFeature(int sub_chunk = 128) : sub_chunk_(sub_chunk) {}
   Feature operator()(std::shared_ptr<Chunk> chunk);
+
 private:
   const int sub_chunk_;
 };

@@ -3,7 +3,7 @@ project(delta_compression_framework)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 99)
 find_package(Glog REQUIRED)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(chunk)

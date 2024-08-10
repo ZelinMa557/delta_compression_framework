@@ -139,6 +139,9 @@ DeltaCompression::DeltaCompression() {
   } else if (feature_type == "odess") {
     this->feature_ = std::make_unique<OdessFeature>(default_odess_sf_cnt, default_odess_sf_subf, default_odess_mask);
     this->index_ = std::make_unique<SuperFeatureIndex>();
+  } else if (feature_type == "n-transform") {
+    this->feature_ = std::make_unique<NTransformFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
+    this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "crc-simhash") {
     this->feature_ = std::make_unique<SimHashFeature>();
     this->index_ = std::make_unique<NaiveMIH>();
