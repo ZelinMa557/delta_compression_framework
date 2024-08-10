@@ -6,7 +6,8 @@ namespace Delta {
 std::optional<chunk_id> NaiveMIH::GetBaseChunkID(const Feature &feat) {
   uint64_t signature = std::get<uint64_t>(feat);
   std::optional<chunk_id> best_chunk_id = std::nullopt;
-  int min_distance = 8;
+  int min_distance = 4;
+  int best_founds = 0;
   if (hashes_.empty()) {
     for (int i = 0; i < 8; i++)
       hashes_.push_back({});
@@ -21,9 +22,14 @@ std::optional<chunk_id> NaiveMIH::GetBaseChunkID(const Feature &feat) {
         min_distance = distance;
         assert(sig_chunk_id_.count(sig));
         best_chunk_id = sig_chunk_id_[sig];
+        best_founds = 1;
+      } else if (distance == min_distance && sig_chunk_id_[sig] != best_chunk_id) {
+        best_founds++;
       }
     }
   }
+  // if (best_founds > 1)
+  // printf("best dis %d found %d total base chunk %d\n", min_distance, best_founds, this->sig_chunk_id_.size());
   return best_chunk_id;
 }
 

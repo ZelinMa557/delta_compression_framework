@@ -109,22 +109,25 @@ uint64_t simhash_ex(const std::vector<hash_t>& hashes) {
 }
 
 uint64_t simhash_ex(uint8_t *content, size_t size) {
-  hash_t result = 0;
+  uint64_t result = 0;
   // Initialize counts to 0
-  const int BIT = 8;
-  std::vector<long> counts(BIT, 0);
+  using element_type = uint32_t;
+  int num_elements = size / sizeof(element_type);
+  // const int BIT = 8;
+  std::vector<long> counts(BITS, 0);
+  element_type *elements = (element_type*)content;
 
-  auto first_hash = content[0];
-  for (size_t i = 0; i < BIT; ++i) {
+  auto first_hash = elements[0];
+  for (size_t i = 0; i < BITS; ++i) {
     counts[i] += (first_hash & 1) ? 1 : -1;
     first_hash >>= 1;
   }
   auto last_hash = first_hash;
 
   // Count the number of 1's, 0's in each position of the hashes
-  for (int i = 1; i < size; ++i) {
-    auto hash = content[i];
-    for (size_t i = 0; i < BIT; ++i) {
+  for (int i = 1; i < num_elements; ++i) {
+    auto hash = elements[i];
+    for (size_t i = 0; i < BITS; ++i) {
       if (last_hash ^ hash) {
         counts[i] += (hash & 1) ? 2 : -2;
       } else {
@@ -134,7 +137,7 @@ uint64_t simhash_ex(uint8_t *content, size_t size) {
       hash >>= 1;
       last_hash >>= 1;
     }
-    last_hash = content[i];
+    last_hash = elements[i];
   }
 
   // Produce the result

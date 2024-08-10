@@ -11,7 +11,7 @@ file_meta_path = "./test_data/default.file"
 type = "odess"
 
 [chunker]
-type = "crc-cdc"
+type = "fast-cdc"
 min_chunk_size = 4096
 max_chunk_size = 16384
 stop_mask = 8191 # 1 << 13 - 1

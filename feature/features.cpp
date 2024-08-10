@@ -45,11 +45,11 @@ Feature FinesseFeature::operator()(std::shared_ptr<Chunk> chunk) {
 }
 
 static uint64_t M[] = {
-    1, 4, 9, 23, 37, 45, 179, 286, 437, 920, 1014, 2987,
+    18425, 4019, 9527, 2312, 36092, 471, 17932, 2856, 4371, 9200, 1014, 2987,
 };
 
 static uint64_t A[] = {
-    982, 1343, 732, 334, 439, 832, 892, 751, 21, 90, 55, 16,
+    982, 1343, 732, 334, 439, 832, 892, 751, 21, 97, 55, 16,
 };
 
 Feature OdessFeature::operator()(std::shared_ptr<Chunk> chunk) {

@@ -40,14 +40,14 @@ void DeltaCompression::AddFile(const std::string &file_name) {
       total_size_compressed_ += chunk->len();
     };
 
-    auto write_delta_chunk = [this](const std::shared_ptr<Chunk> &chunk, const uint32_t base_chunk_id) {
+    auto write_delta_chunk = [this](const std::shared_ptr<Chunk> &chunk,
+                                    const std::shared_ptr<Chunk> &delta_chunk,
+                                    const uint32_t base_chunk_id) {
       chunk_size_before_delta_ += chunk->len();
-      storage_->WriteDeltaChunk(chunk, base_chunk_id);
-      
-        delta_chunk_count_++;
-        chunk_size_after_delta_ += chunk->len();
-        total_size_compressed_ += chunk->len();
-      
+      storage_->WriteDeltaChunk(delta_chunk, base_chunk_id);
+      delta_chunk_count_++;
+      chunk_size_after_delta_ += delta_chunk->len();
+      total_size_compressed_ += delta_chunk->len();
     };
 
     auto feature = (*feature_)(chunk);
@@ -59,12 +59,12 @@ void DeltaCompression::AddFile(const std::string &file_name) {
     }
 
     auto delta_chunk = storage_->GetDeltaEncodedChunk(chunk, base_chunk_id.value());
-    if ((*filter_)(chunk, delta_chunk)) {
-      index_->AddFeature(feature, chunk->id());
-      write_base_chunk(chunk);
-      continue;
-    }
-    write_delta_chunk(delta_chunk, base_chunk_id.value());
+    // if ((*filter_)(chunk, delta_chunk)) {
+    //   index_->AddFeature(feature, chunk->id());
+    //   write_base_chunk(chunk);
+    //   continue;
+    // }
+    write_delta_chunk(chunk, delta_chunk, base_chunk_id.value());
     file_meta.end_chunk_id = chunk->id();
   }
   file_meta_writer_.Write(file_meta);
@@ -162,6 +162,6 @@ DeltaCompression::DeltaCompression() {
   this->file_meta_writer_.Init(file_meta_path);
 
   // TODO
-  this->filter_ = std::make_unique<FilterByDeltaEncoder>();
+  this->filter_ = std::make_unique<NotFilterStrategy>();
 }
 } // namespace Delta
