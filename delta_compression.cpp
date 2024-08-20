@@ -7,6 +7,7 @@
 #include "encoder/xdelta.h"
 #include "index/naive_multi_index_hamming.h"
 #include "index/super_feature_index.h"
+#include "index/best_fit_index.h"
 #include "storage/storage.h"
 #include <glog/logging.h>
 #include <iomanip>
@@ -59,11 +60,12 @@ void DeltaCompression::AddFile(const std::string &file_name) {
     }
 
     auto delta_chunk = storage_->GetDeltaEncodedChunk(chunk, base_chunk_id.value());
-    // if ((*filter_)(chunk, delta_chunk)) {
-    //   index_->AddFeature(feature, chunk->id());
-    //   write_base_chunk(chunk);
-    //   continue;
-    // }
+    if ((*filter_)(chunk, delta_chunk)) {
+      index_->AddFeature(feature, chunk->id());
+      write_base_chunk(chunk);
+      continue;
+    }
+    // std::cout << std::dec << "delta chunk id: " <<chunk->id()<<" base chunk id: "<<base_chunk_id.value()<<std::endl;
     write_delta_chunk(chunk, delta_chunk, base_chunk_id.value());
     file_meta.end_chunk_id = chunk->id();
   }
@@ -71,7 +73,7 @@ void DeltaCompression::AddFile(const std::string &file_name) {
 }
 
 DeltaCompression::~DeltaCompression() {
-  auto print_ratio = [](uint32_t a, uint32_t b) {
+  auto print_ratio = [](size_t a, size_t b) {
     double ratio = (double)a / (double)b;
     std::cout << std::fixed << std::setprecision(1);
     std::cout << "(" << ratio * 100 << "%)" << std::endl;
@@ -88,6 +90,7 @@ DeltaCompression::~DeltaCompression() {
   print_ratio(duplicate_chunk_count_, chunk_count);
   std::cout << "DCR (Delta Compression Ratio): ";
   print_ratio(total_size_origin_, total_size_compressed_);
+  std::cout << "before " << total_size_origin_ << " after: " <<total_size_compressed_<<std::endl;
   std::cout << "DCE (Delta Compression Efficiency): ";
   print_ratio(chunk_size_after_delta_, chunk_size_before_delta_);
 }
@@ -137,12 +140,16 @@ DeltaCompression::DeltaCompression() {
     this->feature_ = std::make_unique<FinesseFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
     this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "odess") {
-    this->feature_ = std::make_unique<OdessFeature>(default_odess_sf_cnt, default_odess_sf_subf, default_odess_mask);
+    this->feature_ = std::make_unique<OdessFeature>(6, 2, default_odess_mask);
     this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "n-transform") {
     this->feature_ = std::make_unique<NTransformFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
     this->index_ = std::make_unique<SuperFeatureIndex>();
-  } else if (feature_type == "crc-simhash") {
+  } else if (feature_type == "test") {
+    this->feature_ = std::make_unique<TestFeature2>();
+    this->index_ = std::make_unique<BestFitIndex>(12);
+  } 
+  else if (feature_type == "simhash") {
     this->feature_ = std::make_unique<SimHashFeature>();
     this->index_ = std::make_unique<NaiveMIH>();
   } else {

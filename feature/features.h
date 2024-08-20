@@ -9,7 +9,7 @@ constexpr int default_finesse_sf_subf = 4;
 
 constexpr int default_odess_sf_cnt = 3;
 constexpr int default_odess_sf_subf = 4;
-constexpr uint64_t default_odess_mask = (1 << 5) - 1;
+constexpr uint64_t default_odess_mask = (1 << 7) - 1;
 class Chunk;
 using Feature = std::variant<uint64_t,             // for simhash feature
                              std::vector<uint64_t> // for super feature
@@ -65,6 +65,16 @@ private:
   const int sf_subf_;
 
   const int mask_;
+};
+
+class TestFeature : public FeatureCalculator {
+public:
+  Feature operator()(std::shared_ptr<Chunk> chunk);
+};
+
+class TestFeature2 : public FeatureCalculator {
+public:
+  Feature operator()(std::shared_ptr<Chunk> chunk);
 };
 
 class SimHashFeature : public FeatureCalculator {

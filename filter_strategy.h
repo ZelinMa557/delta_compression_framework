@@ -29,7 +29,7 @@ public:
   * arg `delta` is the delta encoded chunk
   */
   bool operator()(std::shared_ptr<Chunk> base, std::shared_ptr<Chunk> delta) override {
-    return (double)delta->len() / (double)base->len() > 0.45;
+    return (double)delta->len() / (double)base->len() > 0.25;
   }
 };
 } // namespace Delta

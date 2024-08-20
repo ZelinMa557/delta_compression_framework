@@ -8,7 +8,7 @@ chunk_meta_path = "./test_data/default.meta"
 file_meta_path = "./test_data/default.file"
 
 [feature]
-type = "crc-simhash"
+type = "simhash"
 
 [chunker]
 # type = "crc-cdc"
@@ -16,7 +16,7 @@ type = "crc-simhash"
 # max_sub_chunk_size = 512
 # stop_mask = 63
 # sub_chunk_count = 32
-type = "rabin-cdc"
+type = "fast-cdc"
 min_chunk_size = 4096
 max_chunk_size = 16384
 stop_mask = 8191 # 1 << 13 - 1
