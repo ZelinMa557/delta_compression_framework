@@ -1,3 +1,4 @@
+#pragma once
 #include "chunk/chunker.h"
 #include "encoder/encoder.h"
 #include "index/index.h"
@@ -12,9 +13,9 @@ class DeltaCompression {
 public:
   DeltaCompression();
   ~DeltaCompression();
-  void AddFile(const std::string &file_name);
+  virtual void AddFile(const std::string &file_name);
 
-private:
+protected:
   std::string out_data_path_;
   std::string out_meta_path_;
   std::string index_path_;

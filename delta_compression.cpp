@@ -140,7 +140,7 @@ DeltaCompression::DeltaCompression() {
     this->feature_ = std::make_unique<FinesseFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
     this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "odess") {
-    this->feature_ = std::make_unique<OdessFeature>(6, 2, default_odess_mask);
+    this->feature_ = std::make_unique<OdessFeature>(3, 4, default_odess_mask);
     this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "n-transform") {
     this->feature_ = std::make_unique<NTransformFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);

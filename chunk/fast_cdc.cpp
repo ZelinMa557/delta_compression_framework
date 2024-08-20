@@ -13,7 +13,8 @@ bool FastCDC::ReinitWithFile(std::string file_name) {
   }
   this->file_read_ptr = this->file.get_mapped_addr();
   this->remaining_file_len = this->file.get_maped_len();
-  LOG(INFO) << "FastCDC inited with file: " << file_name << " length: " << remaining_file_len;
+  LOG(INFO) << "FastCDC inited with file: " << file_name
+            << " length: " << remaining_file_len;
   return true;
 }
 
@@ -24,10 +25,10 @@ std::shared_ptr<Chunk> FastCDC::GetNextChunk() {
   if (remaining_file_len <= min_chunk_size) {
     auto chunk_size = remaining_file_len;
     remaining_file_len = 0;
-    LOG(INFO) << "FastCDC split file " << this->file.get_file_name()
-               << " chunk offset: "
-               << (uint64_t)(file_read_ptr - file.get_mapped_addr())
-               << " length: " << chunk_size;
+    LOG(INFO) << "FastCDC split file " << this->file.get_file_name() << " id "
+              << next_chunk_id_ << " chunk offset: "
+              << (uint64_t)(file_read_ptr - file.get_mapped_addr())
+              << " length: " << chunk_size;
     return Chunk::FromMemoryRef(file_read_ptr, chunk_size, get_next_chunk_id());
   }
   uint64_t finger_print = 0;
@@ -44,18 +45,18 @@ std::shared_ptr<Chunk> FastCDC::GetNextChunk() {
     finger_print = (finger_print << 1) + GEAR_TABLE[byte];
     if ((finger_print & mask) == 0) {
       remaining_file_len -= chunk_size;
-      LOG(INFO) << "FastCDC split file " << this->file.get_file_name()
-               << " chunk offset: "
-               << (uint64_t)(read_start - file.get_mapped_addr())
-               << " length: " << chunk_size;
+      LOG(INFO) << "FastCDC split file " << this->file.get_file_name() << " id "
+                << next_chunk_id_ << " chunk offset: "
+                << (uint64_t)(read_start - file.get_mapped_addr())
+                << " length: " << chunk_size;
       return Chunk::FromMemoryRef(read_start, chunk_size, get_next_chunk_id());
     }
   }
   chunk_size--;
-  LOG(INFO) << "FastCDC split file " << this->file.get_file_name()
-               << " chunk offset: "
-               << (uint64_t)(read_start - file.get_mapped_addr())
-               << " length: " << chunk_size;
+  LOG(INFO) << "FastCDC split file " << this->file.get_file_name() << " id "
+            << next_chunk_id_ << " chunk offset: "
+            << (uint64_t)(read_start - file.get_mapped_addr())
+            << " length: " << chunk_size;
   remaining_file_len -= chunk_size;
   return Chunk::FromMemoryRef(read_start, chunk_size, get_next_chunk_id());
 }
