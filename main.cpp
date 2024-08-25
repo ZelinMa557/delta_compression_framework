@@ -8,7 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
-DEFINE_string(config, "finesse.toml", "path to config file");
+DEFINE_string(config, "odess.toml", "path to config file");
 using namespace Delta;
 int main(int argc, char *argv[]) {
   google::InitGoogleLogging(argv[0]);

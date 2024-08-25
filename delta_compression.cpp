@@ -7,6 +7,7 @@
 #include "encoder/xdelta.h"
 #include "index/super_feature_index.h"
 #include "index/best_fit_index.h"
+#include "index/palantir_index.h"
 #include "storage/storage.h"
 #include <glog/logging.h>
 #include <iomanip>
@@ -150,6 +151,9 @@ DeltaCompression::DeltaCompression() {
   } else if (feature_type == "odess62") {
     this->feature_ = std::make_unique<OdessFeature>(6, 2, default_odess_mask);
     this->index_ = std::make_unique<SuperFeatureIndex>(12);
+  } else if (feature_type == "palantir") {
+    this->feature_ = std::make_unique<PalantirFeature>();
+    this->index_ = std::make_unique<PalantirIndex>();
   } else {
     LOG(FATAL) << "Unknown feature type " << feature_type;
   }

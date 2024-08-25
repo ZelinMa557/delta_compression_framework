@@ -160,6 +160,7 @@ Feature PalantirFeature::operator()(std::shared_ptr<Chunk> chunk) {
       }
       super_features[i] = hash_value;
     }
+    return super_features;
   };
 
   results.push_back(group(3,4));
