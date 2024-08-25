@@ -11,9 +11,9 @@
 DEFINE_string(config, "odess.toml", "path to config file");
 using namespace Delta;
 int main(int argc, char *argv[]) {
-  google::InitGoogleLogging(argv[0]);
   FLAGS_stderrthreshold = google::INFO;
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+  google::InitGoogleLogging(argv[0]);
   LOG(INFO) << "using config file " << FLAGS_config;
   Config::Instance().Init(FLAGS_config);
   auto task = Config::Instance().get()->get_as<std::string>("task");
