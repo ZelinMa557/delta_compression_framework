@@ -141,14 +141,17 @@ DeltaCompression::DeltaCompression() {
     this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "odess") {
     this->feature_ = std::make_unique<OdessFeature>(3, 4, default_odess_mask);
-    this->index_ = std::make_unique<SuperFeatureIndex>();
+    this->index_ = std::make_unique<SuperFeatureIndex>(12);
   } else if (feature_type == "n-transform") {
     this->feature_ = std::make_unique<NTransformFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
     this->index_ = std::make_unique<SuperFeatureIndex>();
-  } else if (feature_type == "test") {
-    this->feature_ = std::make_unique<TestFeature2>();
+  } else if (feature_type == "bestfit") {
+    this->feature_ = std::make_unique<OdessSubfeatures>();
     this->index_ = std::make_unique<BestFitIndex>(12);
-  } 
+  } else if (feature_type == "odess62") {
+    this->feature_ = std::make_unique<OdessFeature>(6, 2, default_odess_mask);
+    this->index_ = std::make_unique<SuperFeatureIndex>(12);
+  }
   else if (feature_type == "simhash") {
     this->feature_ = std::make_unique<SimHashFeature>();
     this->index_ = std::make_unique<NaiveMIH>();
@@ -172,6 +175,6 @@ DeltaCompression::DeltaCompression() {
   this->file_meta_writer_.Init(file_meta_path);
 
   // TODO
-  this->filter_ = std::make_unique<NotFilterStrategy>();
+  this->filter_ = std::make_unique<FilterByDeltaEncoder>();
 }
 } // namespace Delta

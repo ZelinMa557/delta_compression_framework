@@ -123,68 +123,7 @@ Feature OdessFeature::operator()(std::shared_ptr<Chunk> chunk) {
   return super_features;
 }
 
-Feature TestFeature::operator()(std::shared_ptr<Chunk> chunk) {
-  const int sf_cnt_ = 3;
-  const int sf_subf_ = 4;
-  const int mask_ = default_odess_mask;
-  int features_num = sf_cnt_ * sf_subf_;
-  std::vector<uint32_t> sub_features(features_num, 0);
-  std::vector<uint64_t> super_features(sf_cnt_, 0);
-
-  int chunk_length = chunk->len();
-  uint8_t *content = chunk->buf();
-  uint64_t finger_print1 = 0, finger_print2 = 0, finger_print3 = 0;
-  // calculate sub features.
-  for (int i = 0; i < chunk_length; i++) {
-    finger_print1 = (finger_print1 << 1) + GEAR_TABLE[content[i]];
-    finger_print2 = (finger_print2 << 1) + GEAR_TABLE[content[i]];
-    finger_print3 = (finger_print3 << 1) + GEAR_TABLE[content[i]];
-    finger_print2 &= ((1LL<<32)-1);
-    if ((finger_print1 & mask_) == 0) {
-      for (int j = 0; j < 4; j++) {
-        const uint32_t transform = (M[j] * finger_print1 + A[j]);
-        // we need to guarantee that when sub_features[i] is not inited,
-        // always set its value
-        if (sub_features[j] >= transform || 0 == sub_features[j])
-          sub_features[j] = transform;
-      }
-      // finger_print1 = 0;
-    } else if ((finger_print2 & mask_) == 0) {
-      for (int j = 4; j < 8; j++) {
-        const uint32_t transform = (M[j] * finger_print2 + A[j]);
-        // we need to guarantee that when sub_features[i] is not inited,
-        // always set its value
-        if (sub_features[j] >= transform || 0 == sub_features[j])
-          sub_features[j] = transform;
-      }
-      // finger_print2 = 0;
-    } else if ((finger_print3 & mask_) == 0) {
-      for (int j = 8; j < 12; j++) {
-        const uint32_t transform = (M[j] * finger_print3 + A[j]);
-        // we need to guarantee that when sub_features[i] is not inited,
-        // always set its value
-        if (sub_features[j] >= transform || 0 == sub_features[j])
-          sub_features[j] = transform;
-      }
-      // finger_print3 = 0;
-    }
-    
-  }
-
-  // group sub features into super features.
-  auto hash_buf = (const uint8_t *const)(sub_features.data());
-  for (int i = 0; i < sf_cnt_; i++) {
-    uint64_t hash_value = 0;
-    auto this_hash_buf = hash_buf + i * sf_subf_ * sizeof(uint32_t);
-    for (int j = 0; j < sf_subf_ * sizeof(uint32_t); j++) {
-      hash_value = (hash_value << 1) + GEAR_TABLE[this_hash_buf[j]];
-    }
-    super_features[i] = hash_value;
-  }
-  return super_features;
-}
-
-Feature TestFeature2::operator()(std::shared_ptr<Chunk> chunk) {
+Feature OdessSubfeatures::operator()(std::shared_ptr<Chunk> chunk) {
   int mask_ = default_odess_mask;
   int features_num = 12;
   std::vector<uint64_t> sub_features(features_num, 0);
@@ -206,8 +145,6 @@ Feature TestFeature2::operator()(std::shared_ptr<Chunk> chunk) {
     }
   }
 
-  
-  
   return sub_features;
 }
 

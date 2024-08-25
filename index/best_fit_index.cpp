@@ -1,5 +1,4 @@
 #include "index/best_fit_index.h"
-#include <unordered_set>
 namespace Delta {
 std::optional<chunk_id> BestFitIndex::GetBaseChunkID(const Feature &feat) {
   const auto &features = std::get<std::vector<uint64_t>>(feat);
@@ -12,8 +11,6 @@ std::optional<chunk_id> BestFitIndex::GetBaseChunkID(const Feature &feat) {
     const auto &matched_chunk_ids = index_i.at(feature);
     for (const auto &id: matched_chunk_ids) {
       match_count[id]++;
-      if (match_count[id] >= 2)
-        return id;
     }
   }
   if (match_count.empty())
@@ -25,9 +22,8 @@ std::optional<chunk_id> BestFitIndex::GetBaseChunkID(const Feature &feat) {
       max_match = count;
     }
   }
-  // std::cout << "max match: " << max_match << std::endl;
-  // if (max_match < 4)
-  //   return std::nullopt;
+  if (max_match < 4)
+    return std::nullopt;
   return max_match_id;
 }
 

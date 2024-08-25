@@ -67,12 +67,7 @@ private:
   const int mask_;
 };
 
-class TestFeature : public FeatureCalculator {
-public:
-  Feature operator()(std::shared_ptr<Chunk> chunk);
-};
-
-class TestFeature2 : public FeatureCalculator {
+class OdessSubfeatures : public FeatureCalculator {
 public:
   Feature operator()(std::shared_ptr<Chunk> chunk);
 };

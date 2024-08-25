@@ -4,17 +4,17 @@ create_if_not_exist() {
         mkdir -p $1
     fi
 }
-create_if_not_exist test_data/glib
+# create_if_not_exist test_data/glib
 
-cd test_data/glib
-for i in {61..80}
-do
-    wget https://download.gnome.org/sources/glib/2.$i/glib-2.$i.0.tar.xz
-done
+# cd test_data/glib
+# for i in {61..80}
+# do
+#     wget https://download.gnome.org/sources/glib/2.$i/glib-2.$i.0.tar.xz
+# done
 
 
-xz -d *.xz
-rm -rf *.xz
+# xz -d *.xz
+# rm -rf *.xz
 
 # cd ../..
 # create_if_not_exist test_data/linux
@@ -54,3 +54,12 @@ rm -rf *.xz
 #   wget https://ftp.postgresql.org/pub/source/v$postgre_version/postgresql-$postgre_version.tar.gz
 #   gzip -d postgresql-$postgre_version.tar.gz
 # done
+
+# cd ../..
+
+create_if_not_exist test_data/attention
+cd test_data/attention
+for i in {1..7}
+do 
+    wget https://arxiv.org/pdf/1706.03762v$i
+done
