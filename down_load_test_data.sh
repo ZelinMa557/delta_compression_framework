@@ -57,9 +57,13 @@ create_if_not_exist() {
 
 # cd ../..
 
-create_if_not_exist test_data/attention
-cd test_data/attention
-for i in {1..7}
-do 
-    wget https://arxiv.org/pdf/1706.03762v$i
+create_if_not_exist test_data/gcc
+cd test_data/gcc
+gcc_versions=(12.1.0 12.2.0 12.3.0 12.4.0
+              13.1.0 13.2.0 13.3.0 14.1.0)
+for gcc_version in "${gcc_versions[@]}"
+do
+    wget https://ftp.tsukuba.wide.ad.jp/software/gcc/releases/gcc-$gcc_version/gcc-$gcc_version.tar.xz
 done
+xz -d *.xz
+rm -rf *.xz

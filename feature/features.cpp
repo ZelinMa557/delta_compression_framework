@@ -3,9 +3,9 @@
 #include "utils/gear.h"
 #include "utils/rabin.cpp"
 #include <algorithm>
-#include <queue>
 #include <crc32c/crc32c.h>
 #include <cstdint>
+#include <queue>
 namespace Delta {
 Feature FinesseFeature::operator()(std::shared_ptr<Chunk> chunk) {
   int sub_chunk_length = chunk->len() / (sf_subf_ * sf_cnt_);
@@ -54,33 +54,34 @@ static uint32_t A[] = {
 };
 
 Feature NTransformFeature::operator()(std::shared_ptr<Chunk> chunk) {
-  uint8_t *content = chunk->buf();
-  std::vector<uint32_t> sub_features(sf_cnt_ * sf_subf_, 0);
+  int features_num = sf_cnt_ * sf_subf_;
+  std::vector<uint32_t> sub_features(features_num, 0);
   std::vector<uint64_t> super_features(sf_cnt_, 0);
-  const int chunk_length = chunk->len();
-  const int features_num = sf_cnt_ * sf_subf_;
 
-  rabin_t rabin_ctx;
-  rabin_init(&rabin_ctx);
+  int chunk_length = chunk->len();
+  uint8_t *content = chunk->buf();
+  uint64_t finger_print = 0;
+  // calculate sub features.
   for (int i = 0; i < chunk_length; i++) {
-    rabin_append(&rabin_ctx, content[i]);
-    const uint64_t finger_print = rabin_ctx.digest;
+    finger_print = (finger_print << 1) + GEAR_TABLE[content[i]];
     for (int j = 0; j < features_num; j++) {
-      const uint32_t transform = M[j] * finger_print + A[j];
-      sub_features[j] = std::max(sub_features[j], transform);
+      const uint32_t transform = (M[j] * finger_print + A[j]);
+      // we need to guarantee that when sub_features[i] is not inited,
+      // always set its value
+      if (sub_features[j] >= transform || 0 == sub_features[j])
+        sub_features[j] = transform;
     }
   }
+
+  // group sub features into super features.
+  auto hash_buf = (const uint8_t *const)(sub_features.data());
   for (int i = 0; i < sf_cnt_; i++) {
-    rabin_t rabin_ctx;
-    rabin_init(&rabin_ctx);
-    for (int j = 0; j < sf_subf_; j++) {
-      auto sub_feature = sub_features[sf_subf_ * i + j];
-      auto data_ptr = (uint8_t *)&sub_feature;
-      for (int k = 0; k < sizeof(uint32_t); k++) {
-        rabin_append(&rabin_ctx, data_ptr[k]);
-      }
+    uint64_t hash_value = 0;
+    auto this_hash_buf = hash_buf + i * sf_subf_ * sizeof(uint32_t);
+    for (int j = 0; j < sf_subf_ * sizeof(uint32_t); j++) {
+      hash_value = (hash_value << 1) + GEAR_TABLE[this_hash_buf[j]];
     }
-    super_features[i] = rabin_ctx.digest;
+    super_features[i] = hash_value;
   }
   return super_features;
 }
@@ -163,9 +164,9 @@ Feature PalantirFeature::operator()(std::shared_ptr<Chunk> chunk) {
     return super_features;
   };
 
-  results.push_back(group(3,4));
-  results.push_back(group(4,3));
-  results.push_back(group(6,2));
+  results.push_back(group(3, 4));
+  results.push_back(group(4, 3));
+  results.push_back(group(6, 2));
   return results;
 }
 } // namespace Delta

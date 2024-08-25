@@ -141,16 +141,13 @@ DeltaCompression::DeltaCompression() {
     this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "odess") {
     this->feature_ = std::make_unique<OdessFeature>(3, 4, default_odess_mask);
-    this->index_ = std::make_unique<SuperFeatureIndex>(12);
+    this->index_ = std::make_unique<SuperFeatureIndex>(3);
   } else if (feature_type == "n-transform") {
     this->feature_ = std::make_unique<NTransformFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
     this->index_ = std::make_unique<SuperFeatureIndex>();
   } else if (feature_type == "bestfit") {
     this->feature_ = std::make_unique<OdessSubfeatures>();
     this->index_ = std::make_unique<BestFitIndex>(12);
-  } else if (feature_type == "odess62") {
-    this->feature_ = std::make_unique<OdessFeature>(6, 2, default_odess_mask);
-    this->index_ = std::make_unique<SuperFeatureIndex>(12);
   } else if (feature_type == "palantir") {
     this->feature_ = std::make_unique<PalantirFeature>();
     this->index_ = std::make_unique<PalantirIndex>();

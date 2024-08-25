@@ -9,7 +9,7 @@ chunk_meta_path = "./test_data/default.meta"
 file_meta_path = "./test_data/default.file"
 
 [feature]
-type = "odess"
+type = "finesse"
 
 [chunker]
 type = "fast-cdc"
