@@ -1,6 +1,6 @@
-#pragma once
 #include "feature/features.h"
 #include "index/index.h"
+#include "index/super_feature_index.h"
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -9,13 +9,16 @@ namespace Delta {
 
 using chunk_id = uint32_t;
 class Chunk;
-class BestFitIndex : public Index {
+class PalantirIndex : public Index {
 public:
-  BestFitIndex(const int feature_count = 12)
-      : feature_count_(feature_count) {
-    for (int i = 0; i < feature_count_; i++) {
-      index_.push_back({});
-    }
+  PalantirIndex() {
+    levels_.push_back(new SuperFeatureIndex(3));
+    levels_.push_back(new SuperFeatureIndex(4));
+    levels_.push_back(new SuperFeatureIndex(6));
+  }
+  ~PalantirIndex() {
+    for (auto level: levels_)
+        delete level;
   }
   std::optional<chunk_id> GetBaseChunkID(const Feature &feat);
   void AddFeature(const Feature &feat, chunk_id id);
@@ -23,7 +26,6 @@ public:
   bool DumpToFile(const std::string &path) { return true;}
 
 private:
-  std::vector<std::unordered_map<uint64_t, std::vector<chunk_id>>> index_;
-  const int feature_count_;
+  std::vector<SuperFeatureIndex*> levels_;
 };
 } // namespace Delta

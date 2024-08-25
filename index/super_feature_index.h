@@ -1,3 +1,4 @@
+#pragma once
 #include "feature/features.h"
 #include "index/index.h"
 #include <functional>

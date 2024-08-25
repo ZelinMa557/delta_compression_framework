@@ -11,8 +11,8 @@ constexpr int default_odess_sf_cnt = 3;
 constexpr int default_odess_sf_subf = 4;
 constexpr uint64_t default_odess_mask = (1 << 7) - 1;
 class Chunk;
-using Feature = std::variant<uint64_t,             // for simhash feature
-                             std::vector<uint64_t> // for super feature
+using Feature = std::variant<std::vector<std::vector<uint64_t>>,
+                             std::vector<uint64_t>
                              >;
 
 class FeatureCalculator {
@@ -72,17 +72,10 @@ public:
   Feature operator()(std::shared_ptr<Chunk> chunk);
 };
 
-class SimHashFeature : public FeatureCalculator {
+class PalantirFeature : public FeatureCalculator {
 public:
   Feature operator()(std::shared_ptr<Chunk> chunk);
-};
-
-class CRCSimHashFeature : public FeatureCalculator {
-public:
-  CRCSimHashFeature(int sub_chunk = 128) : sub_chunk_(sub_chunk) {}
-  Feature operator()(std::shared_ptr<Chunk> chunk);
-
 private:
-  const int sub_chunk_;
+  OdessSubfeatures get_sub_features_;
 };
 } // namespace Delta

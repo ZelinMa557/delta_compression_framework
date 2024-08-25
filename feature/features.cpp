@@ -148,43 +148,26 @@ Feature OdessSubfeatures::operator()(std::shared_ptr<Chunk> chunk) {
   return sub_features;
 }
 
-Feature CRCSimHashFeature::operator()(std::shared_ptr<Chunk> chunk) {
-  std::vector<uint32_t> crc_result(sub_chunk_, 0);
-  int sub_chunk_size = chunk->len() / sub_chunk_;
-  auto buf = chunk->buf();
-  for (int i = 0; i < sub_chunk_; i++) {
-    crc_result[i] = crc32c::Crc32c(buf, sub_chunk_size);
-    buf += sub_chunk_size;
-  }
-  return simhash::simhash_ex(crc_result);
-}
+Feature PalantirFeature::operator()(std::shared_ptr<Chunk> chunk) {
+  auto sub_features = std::get<std::vector<uint64_t>>(get_sub_features_(chunk));
+  std::vector<std::vector<uint64_t>> results;
 
-Feature SimHashFeature::operator()(std::shared_ptr<Chunk> chunk) {
-  int features_num = 12;
-  std::vector<uint32_t> sub_features(features_num, 0);
+  auto group = [&](int sf_cnt, int sf_subf) -> std::vector<uint64_t> {
+    std::vector<uint64_t> super_features(sf_cnt, 0);
+    auto hash_buf = (const uint8_t *const)(sub_features.data());
+    for (int i = 0; i < sf_cnt; i++) {
+      uint64_t hash_value = 0;
+      auto this_hash_buf = hash_buf + i * sf_subf * sizeof(uint64_t);
+      for (int j = 4; j < sf_subf * sizeof(uint64_t); j++) {
+        hash_value = (hash_value << 1) + GEAR_TABLE[this_hash_buf[j]];
+      }
+      super_features[i] = hash_value;
+    }
+  };
 
-  int chunk_length = chunk->len();
-  uint8_t *content = chunk->buf();
-  uint64_t finger_print = 0;
-  std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;
-  constexpr size_t capacity = 512;
-  // calculate sub features.
-  for (int i = 0; i < chunk_length; i++) {
-    finger_print = (finger_print << 1) + GEAR_TABLE[content[i]];
-    if ((finger_print & 31) != 0)
-      continue;
-    const uint32_t linear_transform = finger_print * M[0] + A[0];
-    if (min_heap.size() == capacity)
-      min_heap.pop();
-    min_heap.push(linear_transform);
-  }
-  // std::cout << min_heap.size() << std::endl;
-  std::vector<uint32_t> elements(min_heap.size(), 0);
-  if (min_heap.empty()) return uint64_t(0);
-  while(!min_heap.empty()) {
-    elements.push_back(min_heap.top());
-    min_heap.pop();
-  }
-  return simhash::simhash_ex(elements);
+  results.push_back(group(3,4));
+  results.push_back(group(4,3));
+  results.push_back(group(6,2));
+  return results;
 }
 } // namespace Delta

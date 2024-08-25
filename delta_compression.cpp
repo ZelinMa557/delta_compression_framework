@@ -151,10 +151,6 @@ DeltaCompression::DeltaCompression() {
   } else if (feature_type == "odess62") {
     this->feature_ = std::make_unique<OdessFeature>(6, 2, default_odess_mask);
     this->index_ = std::make_unique<SuperFeatureIndex>(12);
-  }
-  else if (feature_type == "simhash") {
-    this->feature_ = std::make_unique<SimHashFeature>();
-    this->index_ = std::make_unique<NaiveMIH>();
   } else {
     LOG(FATAL) << "Unknown feature type " << feature_type;
   }
