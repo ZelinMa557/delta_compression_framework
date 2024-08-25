@@ -5,7 +5,6 @@
 #include "chunk/rabin_cdc.h"
 #include "config.h"
 #include "encoder/xdelta.h"
-#include "index/naive_multi_index_hamming.h"
 #include "index/super_feature_index.h"
 #include "index/best_fit_index.h"
 #include "storage/storage.h"

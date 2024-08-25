@@ -2,12 +2,9 @@
 #include "chunk/chunk.h"
 #include "utils/gear.h"
 #include "utils/rabin.cpp"
-#include "utils/simhash.h"
 #include <algorithm>
 #include <queue>
 #include <crc32c/crc32c.h>
-#include <iostream>
-#include <iomanip>
 #include <cstdint>
 namespace Delta {
 Feature FinesseFeature::operator()(std::shared_ptr<Chunk> chunk) {
