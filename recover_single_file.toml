@@ -4,4 +4,8 @@ chunk_meta_path = "./test_data/default.meta"
 file_meta_path = "./test_data/default.file"
 
 file_to_recover = "glib-2.70.1.tar"
-output_dir = "./test_data"
+output_dir = "./test_data/"
+
+[storage]
+encoder = "xdelta"
+cache_size = 500 #mb

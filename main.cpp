@@ -1,7 +1,8 @@
 #include "3party/cpptoml.h"
 #include "config.h"
 #include "delta_compression.h"
-#include "pipeline_delta_compression.cpp"
+#include "pipeline_delta_compression.h"
+#include "recover_file.h"
 #include <filesystem>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -39,6 +40,16 @@ int main(int argc, char *argv[]) {
       }
     }
     delete compression;
+  }
+
+  else if (*task == "recover_single") {
+    RecoverFile recover_file;
+    recover_file.RecoverSingleFile();
+  }
+
+  else if (*task == "recover_all") {
+    RecoverFile recover_file;
+    recover_file.RecoverAllFiles();
   }
   return 0;
 }

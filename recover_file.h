@@ -4,9 +4,11 @@
 namespace Delta {
 class RecoverFile {
 public:
+  RecoverFile();
   void RecoverSingleFile();
   void RecoverAllFiles();
 private:
-  void RecoverSingle(const FileMeta &meta, const std::string &path, Storage &storage);
+  void RecoverSingle(const FileMeta &meta, const std::string &path);
+  std::unique_ptr<Storage> storage_;
 };
 }

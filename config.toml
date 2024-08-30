@@ -1,5 +1,5 @@
 task = "compression"
-pipeline = true
+pipeline = false
 task_data_dir = "./test_data/glib"
 
 feature_index_path = "./test_data/default.index"
@@ -10,7 +10,7 @@ file_meta_path = "./test_data/default.file"
 
 [feature]
 # one of finesse, odess, n-transform, palantir, bestfit
-type = "bestfit"
+type = "odess"
 
 [chunker]
 # one of fast-cdc, rabin-cdc

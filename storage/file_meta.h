@@ -1,3 +1,4 @@
+#pragma once
 #include <fstream>
 #include <glog/logging.h>
 #include <iostream>
