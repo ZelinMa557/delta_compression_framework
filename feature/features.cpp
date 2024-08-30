@@ -3,7 +3,6 @@
 #include "utils/gear.h"
 #include "utils/rabin.cpp"
 #include <algorithm>
-#include <crc32c/crc32c.h>
 #include <cstdint>
 #include <queue>
 namespace Delta {

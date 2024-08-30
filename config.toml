@@ -1,4 +1,5 @@
 task = "compression"
+pipeline = true
 task_data_dir = "./test_data/glib"
 
 feature_index_path = "./test_data/default.index"
@@ -8,14 +9,16 @@ chunk_meta_path = "./test_data/default.meta"
 file_meta_path = "./test_data/default.file"
 
 [feature]
-type = "finesse"
+# one of finesse, odess, n-transform, palantir, bestfit
+type = "bestfit"
 
 [chunker]
-type = "rabin-cdc"
+# one of fast-cdc, rabin-cdc
+type = "fast-cdc"
 min_chunk_size = 4096
 max_chunk_size = 16384
-stop_mask = 8191 # 1 << 13 - 1
+stop_mask = 8191 # 1 << 13 - 1, only for fast cdc
 
 [storage]
 encoder = "xdelta"
-cache_size = 200 #mb
+cache_size = 500 #mb

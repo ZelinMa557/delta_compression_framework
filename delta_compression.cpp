@@ -1,13 +1,12 @@
 #include "delta_compression.h"
 #include "chunk/chunk.h"
-#include "chunk/crc_cdc.h"
 #include "chunk/fast_cdc.h"
 #include "chunk/rabin_cdc.h"
 #include "config.h"
 #include "encoder/xdelta.h"
-#include "index/super_feature_index.h"
 #include "index/best_fit_index.h"
 #include "index/palantir_index.h"
+#include "index/super_feature_index.h"
 #include "storage/storage.h"
 #include <glog/logging.h>
 #include <iomanip>
@@ -59,13 +58,8 @@ void DeltaCompression::AddFile(const std::string &file_name) {
       continue;
     }
 
-    auto delta_chunk = storage_->GetDeltaEncodedChunk(chunk, base_chunk_id.value());
-    if ((*filter_)(chunk, delta_chunk)) {
-      index_->AddFeature(feature, chunk->id());
-      write_base_chunk(chunk);
-      continue;
-    }
-    // std::cout << std::dec << "delta chunk id: " <<chunk->id()<<" base chunk id: "<<base_chunk_id.value()<<std::endl;
+    auto delta_chunk =
+        storage_->GetDeltaEncodedChunk(chunk, base_chunk_id.value());
     write_delta_chunk(chunk, delta_chunk, base_chunk_id.value());
     file_meta.end_chunk_id = chunk->id();
   }
@@ -90,10 +84,20 @@ DeltaCompression::~DeltaCompression() {
   print_ratio(duplicate_chunk_count_, chunk_count);
   std::cout << "DCR (Delta Compression Ratio): ";
   print_ratio(total_size_origin_, total_size_compressed_);
-  std::cout << "before " << total_size_origin_ << " after: " <<total_size_compressed_<<std::endl;
+  std::cout << "before " << total_size_origin_
+            << " after: " << total_size_compressed_ << std::endl;
   std::cout << "DCE (Delta Compression Efficiency): ";
   print_ratio(chunk_size_after_delta_, chunk_size_before_delta_);
 }
+
+#define declare_feature_type(NAME, FEATURE, INDEX)                             \
+  {                                                                            \
+#NAME, \
+[]() -> FeatureIndex { \
+  return {std::make_unique<FEATURE>(), \
+          std::make_unique<INDEX>()}; \
+}                                                                       \
+  }
 
 DeltaCompression::DeltaCompression() {
   auto config = Config::Instance().get();
@@ -105,8 +109,7 @@ DeltaCompression::DeltaCompression() {
 
   auto chunker = config->get_table("chunker");
   auto chunker_type = *chunker->get_as<std::string>("type");
-  if (chunker_type == "rabin-cdc" || chunker_type == "fast-cdc" ||
-      chunker_type == "crc-cdc") {
+  if (chunker_type == "rabin-cdc" || chunker_type == "fast-cdc") {
     auto min_chunk_size = *chunker->get_as<int64_t>("min_chunk_size");
     auto max_chunk_size = *chunker->get_as<int64_t>("max_chunk_size");
     auto stop_mask = *chunker->get_as<int64_t>("stop_mask");
@@ -122,12 +125,6 @@ DeltaCompression::DeltaCompression() {
       LOG(INFO) << "Add FastCDC chunker, min_chunk_size=" << min_chunk_size
                 << " max_chunk_size=" << max_chunk_size
                 << " stop_mask=" << stop_mask;
-    } else if (chunker_type == "crc-cdc") {
-      this->chunker_ =
-          std::make_unique<CRC_CDC>(min_chunk_size, max_chunk_size, stop_mask);
-      LOG(INFO) << "Add CRC_CDC chunker, min_chunk_size=" << min_chunk_size
-                << " max_chunk_size=" << max_chunk_size
-                << " stop_mask=" << stop_mask;
     }
   } else {
     LOG(FATAL) << "Unknown chunker type " << chunker_type;
@@ -135,25 +132,22 @@ DeltaCompression::DeltaCompression() {
 
   auto feature = config->get_table("feature");
   auto feature_type = *feature->get_as<std::string>("type");
+  using FeatureIndex =
+      std::pair<std::unique_ptr<FeatureCalculator>, std::unique_ptr<Index>>;
+  std::unordered_map<std::string, std::function<FeatureIndex()>>
+      feature_index_map = {
+          declare_feature_type(finesse, FinesseFeature, SuperFeatureIndex),
+          declare_feature_type(odess, OdessFeature, SuperFeatureIndex),
+          declare_feature_type(n-transform, NTransformFeature,
+                               SuperFeatureIndex),
+          declare_feature_type(palantir, PalantirFeature, PalantirIndex),
+          declare_feature_type(bestfit, OdessSubfeatures, BestFitIndex)};
 
-  if (feature_type == "finesse") {
-    this->feature_ = std::make_unique<FinesseFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
-    this->index_ = std::make_unique<SuperFeatureIndex>();
-  } else if (feature_type == "odess") {
-    this->feature_ = std::make_unique<OdessFeature>(3, 4, default_odess_mask);
-    this->index_ = std::make_unique<SuperFeatureIndex>(3);
-  } else if (feature_type == "n-transform") {
-    this->feature_ = std::make_unique<NTransformFeature>(default_finesse_sf_cnt, default_finesse_sf_subf);
-    this->index_ = std::make_unique<SuperFeatureIndex>();
-  } else if (feature_type == "bestfit") {
-    this->feature_ = std::make_unique<OdessSubfeatures>();
-    this->index_ = std::make_unique<BestFitIndex>(12);
-  } else if (feature_type == "palantir") {
-    this->feature_ = std::make_unique<PalantirFeature>();
-    this->index_ = std::make_unique<PalantirIndex>();
-  } else {
+  if (!feature_index_map.count(feature_type))
     LOG(FATAL) << "Unknown feature type " << feature_type;
-  }
+  auto [feature_ptr, index_ptr] = feature_index_map[feature_type]();
+  this->feature_ = std::move(feature_ptr);
+  this->index_ = std::move(index_ptr);
 
   this->dedup_ = std::make_unique<Dedup>(dedup_index_path);
 
@@ -169,8 +163,5 @@ DeltaCompression::DeltaCompression() {
   this->storage_ = std::make_unique<Storage>(
       chunk_data_path, chunk_meta_path, std::move(encoder), true, cache_size);
   this->file_meta_writer_.Init(file_meta_path);
-
-  // TODO
-  this->filter_ = std::make_unique<FilterByDeltaEncoder>();
 }
 } // namespace Delta
